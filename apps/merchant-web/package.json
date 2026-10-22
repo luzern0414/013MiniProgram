@@ -1,0 +1,22 @@
+{
+  "name": "@restaurant/merchant-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5173",
+    "build": "vue-tsc --noEmit && vite build",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "node --test src/*.test.mjs"
+  },
+  "dependencies": {
+    "vue": "3.5.22",
+    "lucide-vue-next": "0.468.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "5.2.4",
+    "vue-tsc": "3.1.1",
+    "vite": "6.4.1",
+    "typescript": "5.9.3"
+  }
+}

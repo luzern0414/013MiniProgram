@@ -1,0 +1,47 @@
+[
+  {
+    "id": "frappe-books-hold-shift",
+    "url": "https://docs.frappe.io/books/transactional-entries.md",
+    "localPath": ".firecrawl/frappe-books-pos-shifts.md",
+    "scope": "full-page extraction; reused prior fetch",
+    "license": "documentation, concepts only",
+    "readDate": "2026-10-20",
+    "sha256": "198e7df3b4e1a0b5f59177385e0f722e366d83b69e433c7eeeffcb3730a38405"
+  },
+  {
+    "id": "medusa-draft-create",
+    "url": "https://docs.medusajs.com/user-guide/orders/draft-orders/create",
+    "localPath": ".firecrawl/medusa-draft-create.md",
+    "scope": "full-page extraction",
+    "license": "documentation, concepts only",
+    "readDate": "2026-10-20",
+    "sha256": "c90948da32d8beb55b3da2f4c71c264abd7f206cdd5fca64ff91de7b87879373"
+  },
+  {
+    "id": "medusa-draft-reservation-5198",
+    "url": "https://github.com/medusajs/medusa/issues/5198",
+    "localPath": ".firecrawl/medusa-draft-double-reservation.md",
+    "scope": "full-page extraction; historical issue closed/completed",
+    "license": "NOASSERTION index; no code copied",
+    "readDate": "2026-10-20",
+    "sha256": "a2156c87d7dc9cc8a70bcfb123186796dd83dc504726f240e0bff6129ec5fbff"
+  },
+  {
+    "id": "microsoft-shift-drawer",
+    "url": "https://github.com/microsoftdocs/dynamics-365-unified-operations-public/blob/7dee2e089ec38e2e3fbb1a0bda9269f3d8890347/articles/commerce/shift-drawer-management.md",
+    "localPath": ".firecrawl/ms-pos-shift-drawers.md",
+    "scope": "full-page extraction; fixed commit",
+    "license": "CC-BY-4.0 developer index; concepts attributed",
+    "readDate": "2026-10-20",
+    "sha256": "e727cbff1680fbb87783e88f805dd69dbeef87a53af45131d3ce3de4b17541b7"
+  },
+  {
+    "id": "odoo-cash-mismatch-68879",
+    "url": "https://github.com/odoo/odoo/issues/68879",
+    "localPath": ".firecrawl/pos-shift-cash-search.md",
+    "scope": "index passage only; no current bug claim",
+    "license": "NOASSERTION index; no code copied",
+    "readDate": "2026-10-20",
+    "sha256": "37b7b8380b0386c7b43df1c614c05ca49ee2d75372c3f11226530d36d86c9d58"
+  }
+]

@@ -1,0 +1,163 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { PrismaClient } from '@prisma/client';
+import { createApp } from '../src/main';
+import { seed } from '../prisma/seed';
+import { OrdersService } from '../src/modules/orders/orders.service';
+
+test('database-backed security, quotes, inventory, idempotency, cash and CMS', async () => {
+  const url = new URL(process.env.DATABASE_URL!);
+  assert.match(url.searchParams.get('schema') || '', /^test_/,'Integration tests require an isolated test_* schema');
+  process.env.NODE_ENV = 'test'; process.env.DEV_AUTH_ENABLED = 'true'; process.env.DEV_SEED_ENABLED = 'true';
+  const db = new PrismaClient();
+  // Destructive setup is restricted to the explicitly selected test_* schema.
+  await db.$transaction([
+    db.session.deleteMany(), db.audit.deleteMany(), db.cashPayment.deleteMany(), db.orderEvent.deleteMany(),
+    db.order.deleteMany(), db.quote.deleteMany(), db.staffStore.deleteMany(), db.page.deleteMany(), db.diningTable.deleteMany(),
+    db.modifier.deleteMany(), db.sku.deleteMany(), db.product.deleteMany(), db.category.deleteMany(), db.unit.deleteMany(), db.user.deleteMany(), db.store.deleteMany(), db.brand.deleteMany()
+  ]);
+  await seed(db);
+  const app = await createApp(); await app.listen(0, '127.0.0.1');
+  const base = await app.getUrl() + '/api/v1';
+  async function request(path: string, token?: string, body?: any, method?: string, key?: string) {
+    const res = await fetch(base + path, {method: method || (body ? 'POST' : 'GET'), headers: {'Content-Type': 'application/json', ...(token ? {Authorization: `Bearer ${token}`} : {}), ...(key ? {'Idempotency-Key': key} : {})}, body: body ? JSON.stringify(body) : undefined});
+    return {status: res.status, body: await res.json() as any};
+  }
+  try {
+    const login = async (account: string) => (await request('/auth/dev-login', undefined, {account})).body.data.token;
+    const customer = await login('customer'), owner = await login('owner'), clerkA = await login('clerk-a'), clerkB = await login('clerk-b');
+    assert.equal((await request('/merchant/cash-shifts', owner, {storeId: 'experience-store-a', openingFen: 0}, 'POST', 'integration-fixture-shift')).status, 201);
+    const stores = (await request('/stores')).body.data;
+    const a = stores.find((s: any) => s.id === 'experience-store-a'), b = stores.find((s: any) => s.id === 'experience-store-b');
+    assert.equal((await request(`/merchant/overview?storeId=${b.id}`, clerkA)).status, 403);
+    assert.equal((await request(`/merchant/staff?storeId=${a.id}`, clerkA)).status, 403);
+    assert.equal((await request(`/merchant/stores/${a.id}`, clerkA, {name: 'unauthorized'}, 'PATCH')).status, 403);
+    const catalog = (await request(`/stores/${a.id}/catalog`)).body.data;
+    const sku = catalog.products[0].skus[0];
+    assert.equal((await request('/quotes', clerkB, {storeId: a.id, mode: 'PICKUP', lines: [{skuId: sku.id, quantity: 1, modifierIds: []}]})).status, 403);
+    const anotherUser = await db.user.create({data: {brandId: 'experience-brand', name: 'Other customer', role: 'CUSTOMER'}});
+    const {createHash} = await import('node:crypto');
+    const otherToken = 'x'.repeat(43);
+    await db.session.create({data: {userId: anotherUser.id, tokenHash: createHash('sha256').update(otherToken).digest('hex'), expiresAt: new Date(Date.now() + 60000)}});
+    const tables = (await request(`/stores/${a.id}/tables`)).body.data;
+    assert.equal((await request('/quotes', customer, {storeId: a.id, mode: 'DINE_IN', tableCode: 'EXPERIENCE-B-1', lines: [{skuId: sku.id, quantity: 1, modifierIds: []}]})).body.error.code, 'VALIDATION_ERROR');
+    assert.equal((await request('/quotes', customer, {storeId: a.id, mode: 'DINE_IN', tableCode: tables[0].code, lines: [{skuId: sku.id, quantity: 1, modifierIds: []}]})).status, 201);
+    await db.sku.update({where: {id: sku.id}, data: {stock: 1, reserved: 0}});
+    const quoteBody = {storeId: a.id, mode: 'PICKUP', lines: [{skuId: sku.id, quantity: 1, modifierIds: []}]};
+    assert.equal((await request('/quotes', customer, {...quoteBody, mode: 'DELIVERY', address: {name: 'test', phone: '13800000000', detail: 'unknown range'}})).body.error.code, 'INTEGRATION_UNAVAILABLE');
+    assert.equal((await request('/quotes', customer, {...quoteBody, couponId: 'unsupported'})).status, 400);
+    assert.equal((await request('/quotes', customer, {...quoteBody, lines: [{skuId: sku.id, quantity: 0, modifierIds: []}]})).status, 400);
+    const q1 = (await request('/quotes', customer, quoteBody)).body.data;
+    const q2 = (await request('/quotes', customer, quoteBody)).body.data;
+    assert.equal((await request('/orders', otherToken, {quoteId: q1.id}, undefined, 'foreign')).status, 403);
+    const race = await Promise.all([request('/orders', customer, {quoteId: q1.id}, undefined, 'race-a'), request('/orders', customer, {quoteId: q2.id}, undefined, 'race-b')]);
+    assert.equal(race.filter(r => r.status === 201).length, 1);
+    assert.equal(race.filter(r => r.body.error?.code === 'OUT_OF_STOCK').length, 1);
+    const winner = race.find(r => r.status === 201)!.body.data;
+    assert.equal((await request(`/orders/${winner.id}`, otherToken)).status, 403);
+    assert.equal((await request(`/orders/${winner.id}/cancel`, otherToken, {})).status, 403);
+    const winningQuote = winner.id === race[0].body.data?.id ? q1.id : q2.id;
+    const winningKey = winningQuote === q1.id ? 'race-a' : 'race-b';
+    assert.equal((await request('/orders', customer, {quoteId: winningQuote}, undefined, winningKey)).body.data.id, winner.id);
+    assert.equal((await request('/orders', customer, {quoteId: winningQuote === q1.id ? q2.id : q1.id}, undefined, winningKey)).body.error.code, 'STATE_CONFLICT');
+    assert.equal((await request(`/orders/${winner.id}`, clerkB)).status, 403);
+    await Promise.all([request(`/orders/${winner.id}/cancel`, customer, {}), request(`/orders/${winner.id}/cancel`, customer, {})]);
+    assert.equal((await db.sku.findUniqueOrThrow({where: {id: sku.id}})).stock, 1);
+    assert.equal((await db.sku.findUniqueOrThrow({where: {id: sku.id}})).reserved, 0);
+    const q3 = (await request('/quotes', customer, quoteBody)).body.data;
+    await db.sku.update({where: {id: sku.id}, data: {priceFen: sku.priceFen + 100}});
+    assert.equal((await request('/orders', customer, {quoteId: q3.id}, undefined, 'changed')).body.error.code, 'PRICE_CHANGED');
+    const q4 = (await request('/quotes', customer, quoteBody)).body.data;
+    const order = (await request('/orders', customer, {quoteId: q4.id}, undefined, 'cash')).body.data;
+    assert.equal((await request(`/merchant/orders/${order.id}/cash-payment`, customer, {tenderedFen: order.totalFen})).status, 403);
+    assert.equal((await request(`/merchant/orders/${order.id}/cash-payment`, clerkB, {tenderedFen: order.totalFen})).status, 403);
+    const held = await db.sku.findUniqueOrThrow({where: {id: sku.id}});
+    await request(`/merchant/skus/${sku.id}`, owner, {storeId: a.id, stock: 5}, 'PATCH');
+    assert.equal((await db.sku.findUniqueOrThrow({where: {id: sku.id}})).reserved, held.reserved);
+    assert.equal((await request(`/merchant/orders/${order.id}/cash-payment`, clerkA, {tenderedFen: order.totalFen - 1})).status, 400);
+    const paid = await Promise.all([request(`/merchant/orders/${order.id}/cash-payment`, clerkA, {tenderedFen: order.totalFen + 100}), request(`/merchant/orders/${order.id}/cash-payment`, clerkA, {tenderedFen: order.totalFen + 100})]);
+    assert.ok(paid.every(r => r.body.data.paymentStatus === 'PAID'));
+    assert.equal(await db.cashPayment.count({where: {orderId: order.id}}), 1);
+    assert.equal((await request(`/orders/${order.id}/cancel`, customer, {})).body.error.code, 'REFUND_UNAVAILABLE');
+    assert.equal((await request(`/merchant/orders/${order.id}/transition`, clerkA, {action: 'ACCEPT'})).body.data.status, 'PREPARING');
+    for (const action of [['READY'], {}, null, 1, true]) {
+      assert.equal((await request(`/merchant/orders/${order.id}/transition`, clerkA, {action})).status, 409);
+      assert.equal((await request(`/orders/${order.id}`, customer)).body.data.status, 'PREPARING');
+    }
+    for (const action of ['constructor', 'toString', '__proto__']) assert.equal((await request(`/merchant/orders/${order.id}/transition`, clerkA, {action})).status, 409);
+    assert.equal((await request(`/merchant/orders/${order.id}/transition`, clerkA, {action: 'COMPLETE'})).body.error.code, 'STATE_CONFLICT');
+    await request(`/merchant/orders/${order.id}/transition`, clerkA, {action: 'READY'});
+    assert.equal((await request(`/merchant/orders/${order.id}/transition`, clerkA, {action: 'COMPLETE'})).body.data.status, 'COMPLETED');
+    assert.equal((await request(`/merchant/orders/${order.id}/transition`, clerkA, {action: 'ACCEPT'})).body.error.code, 'STATE_CONFLICT');
+    const page = (await request(`/merchant/page?storeId=${a.id}`, owner)).body.data;
+    await request(`/merchant/page?storeId=${a.id}`, owner, {notice: 'test draft', bannerTitle: 'title', bannerSubtitle: 'subtitle', primaryColor: '#247D61'}, 'PUT');
+    assert.equal((await request(`/merchant/page/publish?storeId=${a.id}`, owner, {expectedVersion: page.version})).body.error.code, 'VERSION_CONFLICT');
+    assert.notEqual((await request(`/public-config?storeId=${a.id}`)).body.data.home.notice, 'test draft');
+    const currentPage = (await request(`/merchant/page?storeId=${a.id}`, owner)).body.data;
+    assert.equal((await request(`/merchant/page/publish?storeId=${a.id}`, owner, {expectedVersion: currentPage.version})).status, 201);
+    assert.equal((await request(`/public-config?storeId=${a.id}`)).body.data.home.notice, 'test draft');
+    assert.equal((await request(`/orders/${order.id}/payment`, customer, {provider: 'WECHAT'})).status, 503);
+    const overview = (await request(`/merchant/overview?storeId=${a.id}`, owner)).body.data;
+    assert.equal(overview.paidRevenueFen, order.totalFen);
+    assert.equal((await request(`/orders/${order.id}`, customer)).body.data.totalFen, order.totalFen, 'historic totals remain immutable');
+    const expiryQuote = (await request('/quotes', customer, quoteBody)).body.data;
+    await db.quote.update({where: {id: expiryQuote.id}, data: {expiresAt: new Date(0)}});
+    assert.equal((await request('/orders', customer, {quoteId: expiryQuote.id}, undefined, 'expired')).body.error.code, 'PRICE_CHANGED');
+    const withModifier = catalog.products.find((p: any) => p.modifiers.length);
+    const modifierSku = withModifier.skus[0], modifier = withModifier.modifiers[0];
+    await db.sku.update({where: {id: modifierSku.id}, data: {stock: 2}});
+    await db.modifier.update({where: {id: modifier.id}, data: {stock: 2}});
+    const modifiedQuote = (await request('/quotes', customer, {storeId: a.id, mode: 'PICKUP', lines: [{skuId: modifierSku.id, quantity: 1, modifierIds: [modifier.id, modifier.id]}]})).body.data;
+    assert.equal(modifiedQuote.lines[0].modifierIds.length, 1, 'duplicate modifier IDs are charged only once');
+    await db.sku.update({where: {id: modifierSku.id}, data: {stock: 0}});
+    assert.equal((await request('/orders', customer, {quoteId: modifiedQuote.id}, undefined, 'modifier-rollback')).body.error.code, 'OUT_OF_STOCK');
+    const afterRollback = await db.modifier.findUniqueOrThrow({where: {id: modifier.id}});
+    assert.equal(afterRollback.stock, 2, 'SKU failure rolls modifier decrement back');
+    assert.equal(afterRollback.reserved, 0);
+    await assert.rejects(db.sku.update({where: {id: modifierSku.id}, data: {stock: -1}}), 'database CHECK rejects negative inventory even outside HTTP');
+    await request(`/merchant/stores/${a.id}`, clerkA, {isOpen: false}, 'PATCH');
+    assert.equal((await request('/quotes', customer, quoteBody)).body.error.code, 'STORE_CLOSED');
+    await request(`/merchant/stores/${a.id}`, clerkA, {isOpen: true}, 'PATCH');
+    await db.sku.update({where: {id: sku.id}, data: {stock: 5}});
+    const dineQuote = (await request('/quotes', customer, {...quoteBody, mode: 'DINE_IN', tableCode: tables[0].code})).body.data;
+    const dineOrder = (await request('/orders', customer, {quoteId: dineQuote.id}, undefined, 'dine-in')).body.data;
+    assert.equal((await request(`/stores/${a.id}/tables`)).body.data.find((t: any) => t.id === tables[0].id).status, 'OCCUPIED');
+    await request(`/orders/${dineOrder.id}/cancel`, customer, {});
+    assert.equal((await request(`/stores/${a.id}/tables`)).body.data.find((t: any) => t.id === tables[0].id).status, 'FREE');
+    const expiryOrderQuote = (await request('/quotes', customer, quoteBody)).body.data;
+    const expiryOrder = (await request('/orders', customer, {quoteId: expiryOrderQuote.id}, undefined, 'order-expiry')).body.data;
+    const beforeExpiry = await db.sku.findUniqueOrThrow({where: {id: sku.id}});
+    await db.order.update({where: {id: expiryOrder.id}, data: {paymentExpiresAt: new Date(0)}});
+    assert.equal((await request(`/merchant/orders/${expiryOrder.id}/cash-payment`, clerkA, {tenderedFen: expiryOrder.totalFen})).body.error.code, 'STATE_CONFLICT');
+    const expiredCounts = await Promise.all([app.get(OrdersService).expireUnpaid(), app.get(OrdersService).expireUnpaid()]);
+    assert.equal(expiredCounts.reduce((s, c) => s + c, 0), 1, 'concurrent expiry workers close an order once');
+    assert.equal((await db.order.findUniqueOrThrow({where: {id: expiryOrder.id}})).status, 'CANCELLED');
+    const afterExpiry = await db.sku.findUniqueOrThrow({where: {id: sku.id}});
+    assert.equal(afterExpiry.stock, beforeExpiry.stock + 1);
+    assert.equal(afterExpiry.reserved, beforeExpiry.reserved - 1);
+    assert.equal(await app.get(OrdersService).expireUnpaid(), 0, 'repeat sweep cannot release twice');
+    assert.equal(await db.orderEvent.count({where: {orderId: expiryOrder.id, status: 'CANCELLED'}}), 1);
+    assert.equal(await db.audit.count({where: {entityId: expiryOrder.id, action: 'ORDER_EXPIRED'}}), 1);
+    await db.order.update({where: {id: order.id}, data: {paymentExpiresAt: new Date(0)}});
+    assert.equal(await app.get(OrdersService).expireUnpaid(), 0, 'paid orders never expire');
+    const clerkQuote = (await request('/quotes', clerkA, quoteBody)).body.data;
+    const clerkOrder = (await request('/orders', clerkA, {quoteId: clerkQuote.id}, undefined, 'clerk-replay')).body.data;
+    await db.staffStore.delete({where: {userId_storeId: {userId: 'experience-user-clerk-a', storeId: a.id}}});
+    assert.equal((await request(`/orders/${clerkOrder.id}`, clerkA)).status, 403);
+    assert.equal((await request('/orders', clerkA, {quoteId: clerkQuote.id}, undefined, 'clerk-replay')).status, 403);
+    await db.staffStore.create({data: {userId: 'experience-user-clerk-a', storeId: a.id}});
+    for (const phone of ['+8613800000000', '+86 138-0000-0000', 'malformed']) {
+      await db.user.update({where: {id: 'experience-user-customer'}, data: {phone}});
+      const member = (await request(`/merchant/members?storeId=${a.id}`, owner)).body.data.find((m: any) => m.id === 'experience-user-customer');
+      assert.notEqual(member.phone, phone); assert.ok(member.phone.includes('*'));
+    }
+    await db.brand.create({data: {id: 'other-brand', name: 'Other brand'}});
+    await db.store.create({data: {id: 'other-store', brandId: 'other-brand', name: 'private', address: 'private', phone: ''}});
+    assert.equal((await request('/stores')).status, 503);
+    process.env.PUBLIC_BRAND_ID = 'experience-brand';
+    assert.equal((await request('/stores')).body.data.length, 2);
+    assert.equal((await request('/stores/other-store/catalog')).status, 404);
+    assert.equal((await request('/public-config?storeId=other-store')).status, 404);
+    delete process.env.PUBLIC_BRAND_ID;
+  } finally { await app.close(); await db.$disconnect(); }
+});

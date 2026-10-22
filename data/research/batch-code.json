@@ -1,0 +1,92 @@
+[
+  {
+    "identifier": "code-guchengwuyue--yshop-drink-AppStoreOrderServiceImpl-java",
+    "url": "https://raw.githubusercontent.com/guchengwuyue/yshop-drink/42f416022f5d7b51b7a581976638b1895e20407d/yshop-drink-boot3/yshop-module-mall/yshop-module-order-biz/src/main/java/co/yixiang/yshop/module/order/service/storeorder/AppStoreOrderServiceImpl.java",
+    "title": "guchengwuyue/yshop-drink :: yshop-drink-boot3/yshop-module-mall/yshop-module-order-biz/src/main/java/co/yixiang/yshop/module/order/service/storeorder/AppStoreOrderServiceImpl.java",
+    "category": "github-code"
+  },
+  {
+    "identifier": "code-guchengwuyue--yshop-drink-StoreOrderServiceImpl-java",
+    "url": "https://raw.githubusercontent.com/guchengwuyue/yshop-drink/42f416022f5d7b51b7a581976638b1895e20407d/yshop-drink-boot3/yshop-module-mall/yshop-module-order-biz/src/main/java/co/yixiang/yshop/module/order/service/storeorder/StoreOrderServiceImpl.java",
+    "title": "guchengwuyue/yshop-drink :: yshop-drink-boot3/yshop-module-mall/yshop-module-order-biz/src/main/java/co/yixiang/yshop/module/order/service/storeorder/StoreOrderServiceImpl.java",
+    "category": "github-code"
+  },
+  {
+    "identifier": "code-guchengwuyue--yshop-drink-AppCouponServiceImpl-java",
+    "url": "https://raw.githubusercontent.com/guchengwuyue/yshop-drink/42f416022f5d7b51b7a581976638b1895e20407d/yshop-drink-boot3/yshop-module-marketing/yshop-module-coupon-biz/src/main/java/co/yixiang/yshop/module/coupon/service/coupon/AppCouponServiceImpl.java",
+    "title": "guchengwuyue/yshop-drink :: yshop-drink-boot3/yshop-module-marketing/yshop-module-coupon-biz/src/main/java/co/yixiang/yshop/module/coupon/service/coupon/AppCouponServiceImpl.java",
+    "category": "github-code"
+  },
+  {
+    "identifier": "code-guchengwuyue--yshop-drink-StoreShopServiceImpl-java",
+    "url": "https://raw.githubusercontent.com/guchengwuyue/yshop-drink/42f416022f5d7b51b7a581976638b1895e20407d/yshop-drink-boot3/yshop-module-mall/yshop-module-store-biz/src/main/java/co/yixiang/yshop/module/store/service/storeshop/StoreShopServiceImpl.java",
+    "title": "guchengwuyue/yshop-drink :: yshop-drink-boot3/yshop-module-mall/yshop-module-store-biz/src/main/java/co/yixiang/yshop/module/store/service/storeshop/StoreShopServiceImpl.java",
+    "category": "github-code"
+  },
+  {
+    "identifier": "code-linlinjava--litemall-WxOrderService-java",
+    "url": "https://raw.githubusercontent.com/linlinjava/litemall/a1ef964a718b7277925b19ea26afe78ea3a1d325/litemall-wx-api/src/main/java/org/linlinjava/litemall/wx/service/WxOrderService.java",
+    "title": "linlinjava/litemall :: litemall-wx-api/src/main/java/org/linlinjava/litemall/wx/service/WxOrderService.java",
+    "category": "github-code"
+  },
+  {
+    "identifier": "code-linlinjava--litemall-OrderUtil-java",
+    "url": "https://raw.githubusercontent.com/linlinjava/litemall/a1ef964a718b7277925b19ea26afe78ea3a1d325/litemall-db/src/main/java/org/linlinjava/litemall/db/util/OrderUtil.java",
+    "title": "linlinjava/litemall :: litemall-db/src/main/java/org/linlinjava/litemall/db/util/OrderUtil.java",
+    "category": "github-code"
+  },
+  {
+    "identifier": "code-linlinjava--litemall-GoodsProductMapper-xml",
+    "url": "https://raw.githubusercontent.com/linlinjava/litemall/a1ef964a718b7277925b19ea26afe78ea3a1d325/litemall-db/src/main/resources/org/linlinjava/litemall/db/dao/GoodsProductMapper.xml",
+    "title": "linlinjava/litemall :: litemall-db/src/main/resources/org/linlinjava/litemall/db/dao/GoodsProductMapper.xml",
+    "category": "github-code"
+  },
+  {
+    "identifier": "code-cocktail18--bee-api-order-go",
+    "url": "https://raw.githubusercontent.com/cocktail18/bee-api/e75d2973eb2ad551c8e03bee101a8a9ef625de42/bee-api/service/order.go",
+    "title": "cocktail18/bee-api :: bee-api/service/order.go",
+    "category": "github-code"
+  },
+  {
+    "identifier": "code-cocktail18--bee-api-coupon-go",
+    "url": "https://raw.githubusercontent.com/cocktail18/bee-api/e75d2973eb2ad551c8e03bee101a8a9ef625de42/bee-api/service/coupon.go",
+    "title": "cocktail18/bee-api :: bee-api/service/coupon.go",
+    "category": "github-code"
+  },
+  {
+    "identifier": "code-cocktail18--bee-api-pay-go",
+    "url": "https://raw.githubusercontent.com/cocktail18/bee-api/e75d2973eb2ad551c8e03bee101a8a9ef625de42/bee-api/service/pay.go",
+    "title": "cocktail18/bee-api :: bee-api/service/pay.go",
+    "category": "github-code"
+  },
+  {
+    "identifier": "code-cocktail18--bee-api-order_test-go",
+    "url": "https://raw.githubusercontent.com/cocktail18/bee-api/e75d2973eb2ad551c8e03bee101a8a9ef625de42/bee-api/service/order_test.go",
+    "title": "cocktail18/bee-api :: bee-api/service/order_test.go",
+    "category": "github-code"
+  },
+  {
+    "identifier": "code-woniudiancang--bee-order-js",
+    "url": "https://raw.githubusercontent.com/woniudiancang/bee/edb27edd56fbc5d1d2a31aa408b250ff5f38ab20/pages/cart/order.js",
+    "title": "woniudiancang/bee :: pages/cart/order.js",
+    "category": "github-code"
+  },
+  {
+    "identifier": "package-unibest",
+    "url": "https://raw.githubusercontent.com/feige996/unibest/base/package.json",
+    "title": "feige996/unibest package.json",
+    "category": "github-build"
+  },
+  {
+    "identifier": "package-wot",
+    "url": "https://raw.githubusercontent.com/Moonofweisheng/wot-design-uni/master/package.json",
+    "title": "Moonofweisheng/wot-design-uni package.json",
+    "category": "github-build"
+  },
+  {
+    "identifier": "package-uni-preset",
+    "url": "https://raw.githubusercontent.com/dcloudio/uni-preset-vue/vite-ts/package.json",
+    "title": "dcloudio/uni-preset-vue package.json",
+    "category": "github-build"
+  }
+]

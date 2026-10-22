@@ -1,0 +1,242 @@
+[
+  {
+    "identifier": "search-ordering",
+    "url": "https://api.github.com/search/repositories?q=%E5%BE%AE%E4%BF%A1%20%E7%82%B9%E9%A4%90&sort=stars&per_page=8",
+    "category": "github-search",
+    "title": "微信 点餐"
+  },
+  {
+    "identifier": "search-restaurant",
+    "url": "https://api.github.com/search/repositories?q=%E9%A4%90%E9%A5%AE%20%E5%B0%8F%E7%A8%8B%E5%BA%8F&sort=stars&per_page=8",
+    "category": "github-search",
+    "title": "餐饮 小程序"
+  },
+  {
+    "identifier": "search-pos",
+    "url": "https://api.github.com/search/repositories?q=restaurant%20pos&sort=stars&per_page=8",
+    "category": "github-search",
+    "title": "restaurant pos"
+  },
+  {
+    "identifier": "search-membership",
+    "url": "https://api.github.com/search/repositories?q=%E5%BE%AE%E4%BF%A1%20%E4%BC%9A%E5%91%98%20%E5%95%86%E5%9F%8E&sort=stars&per_page=8",
+    "category": "github-search",
+    "title": "微信 会员 商城"
+  },
+  {
+    "identifier": "search-uni-food",
+    "url": "https://api.github.com/search/repositories?q=uniapp%20%E7%82%B9%E9%A4%90&sort=stars&per_page=8",
+    "category": "github-search",
+    "title": "uniapp 点餐"
+  },
+  {
+    "identifier": "repo-linlinjava--litemall",
+    "url": "https://api.github.com/repos/linlinjava/litemall",
+    "category": "github-repository",
+    "title": "linlinjava/litemall"
+  },
+  {
+    "identifier": "repo-macrozheng--mall",
+    "url": "https://api.github.com/repos/macrozheng/mall",
+    "category": "github-repository",
+    "title": "macrozheng/mall"
+  },
+  {
+    "identifier": "repo-crmeb--CRMEB",
+    "url": "https://api.github.com/repos/crmeb/CRMEB",
+    "category": "github-repository",
+    "title": "crmeb/CRMEB"
+  },
+  {
+    "identifier": "repo-likeshop-github--likeshop",
+    "url": "https://api.github.com/repos/likeshop-github/likeshop",
+    "category": "github-repository",
+    "title": "likeshop-github/likeshop"
+  },
+  {
+    "identifier": "repo-dcloudio--uni-app",
+    "url": "https://api.github.com/repos/dcloudio/uni-app",
+    "category": "github-repository",
+    "title": "dcloudio/uni-app"
+  },
+  {
+    "identifier": "repo-Moonofweisheng--wot-design-uni",
+    "url": "https://api.github.com/repos/Moonofweisheng/wot-design-uni",
+    "category": "github-repository",
+    "title": "Moonofweisheng/wot-design-uni"
+  },
+  {
+    "identifier": "repo-element-plus--element-plus",
+    "url": "https://api.github.com/repos/element-plus/element-plus",
+    "category": "github-repository",
+    "title": "element-plus/element-plus"
+  },
+  {
+    "identifier": "repo-nestjs--nest",
+    "url": "https://api.github.com/repos/nestjs/nest",
+    "category": "github-repository",
+    "title": "nestjs/nest"
+  },
+  {
+    "identifier": "repo-prisma--prisma",
+    "url": "https://api.github.com/repos/prisma/prisma",
+    "category": "github-repository",
+    "title": "prisma/prisma"
+  },
+  {
+    "identifier": "repo-youzan--vant-weapp",
+    "url": "https://api.github.com/repos/youzan/vant-weapp",
+    "category": "github-repository",
+    "title": "youzan/vant-weapp"
+  },
+  {
+    "identifier": "repo-Tencent--tdesign-miniprogram",
+    "url": "https://api.github.com/repos/Tencent/tdesign-miniprogram",
+    "category": "github-repository",
+    "title": "Tencent/tdesign-miniprogram"
+  },
+  {
+    "identifier": "repo-wechat-miniprogram--miniprogram-demo",
+    "url": "https://api.github.com/repos/wechat-miniprogram/miniprogram-demo",
+    "category": "github-repository",
+    "title": "wechat-miniprogram/miniprogram-demo"
+  },
+  {
+    "identifier": "repo-wechatpay-apiv3--wechatpay-java",
+    "url": "https://api.github.com/repos/wechatpay-apiv3/wechatpay-java",
+    "category": "github-repository",
+    "title": "wechatpay-apiv3/wechatpay-java"
+  },
+  {
+    "identifier": "repo-unibest-tech--unibest",
+    "url": "https://api.github.com/repos/unibest-tech/unibest",
+    "category": "github-repository",
+    "title": "unibest-tech/unibest"
+  },
+  {
+    "identifier": "repo-Vendure-ecommerce--vendure",
+    "url": "https://api.github.com/repos/Vendure-ecommerce/vendure",
+    "category": "github-repository",
+    "title": "Vendure-ecommerce/vendure"
+  },
+  {
+    "identifier": "repo-NervJS--taro",
+    "url": "https://api.github.com/repos/NervJS/taro",
+    "category": "github-repository",
+    "title": "NervJS/taro"
+  },
+  {
+    "identifier": "wx-login",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/login.html",
+    "category": "wechat-official",
+    "title": "小程序登录"
+  },
+  {
+    "identifier": "wx-request",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/api/network/request/wx.request.html",
+    "category": "wechat-official",
+    "title": "小程序网络请求"
+  },
+  {
+    "identifier": "wx-payment",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/api/payment/wx.requestPayment.html",
+    "category": "wechat-official",
+    "title": "小程序发起支付"
+  },
+  {
+    "identifier": "wx-subscribe",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/subscribe-message.html",
+    "category": "wechat-official",
+    "title": "订阅消息"
+  },
+  {
+    "identifier": "wx-privacy",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/framework/user-privacy/",
+    "category": "wechat-official",
+    "title": "小程序隐私保护"
+  },
+  {
+    "identifier": "wx-qrcode",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/qrcode-link/qr-code/getUnlimitedQRCode.html",
+    "category": "wechat-official",
+    "title": "小程序码"
+  },
+  {
+    "identifier": "wx-phone",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/getPhoneNumber.html",
+    "category": "wechat-official",
+    "title": "手机号能力"
+  },
+  {
+    "identifier": "uni-app-intro",
+    "url": "https://uniapp.dcloud.net.cn/",
+    "category": "technical-official",
+    "title": "uni-app 官方文档"
+  },
+  {
+    "identifier": "wot-intro",
+    "url": "https://wot-design-uni.cn/",
+    "category": "technical-official",
+    "title": "Wot Design Uni 官方文档"
+  },
+  {
+    "identifier": "nestjs-auth",
+    "url": "https://docs.nestjs.com/security/authentication",
+    "category": "technical-official",
+    "title": "NestJS 身份认证"
+  },
+  {
+    "identifier": "prisma-transactions",
+    "url": "https://www.prisma.io/docs/orm/prisma-client/queries/transactions",
+    "category": "technical-official",
+    "title": "Prisma 事务"
+  },
+  {
+    "identifier": "postgres-locks",
+    "url": "https://www.postgresql.org/docs/current/explicit-locking.html",
+    "category": "technical-official",
+    "title": "PostgreSQL 锁与并发控制"
+  },
+  {
+    "identifier": "redis-idempotency",
+    "url": "https://redis.io/docs/latest/develop/use/patterns/distributed-locks/",
+    "category": "technical-official",
+    "title": "Redis 分布式锁"
+  },
+  {
+    "identifier": "wechatpay-intro",
+    "url": "https://pay.weixin.qq.com/doc/v3/merchant/4012791856",
+    "category": "wechat-official",
+    "title": "微信支付 小程序支付"
+  },
+  {
+    "identifier": "youzan-catering",
+    "url": "https://www.youzan.com/intro/solution/catering",
+    "category": "industry",
+    "title": "有赞餐饮 产品能力"
+  },
+  {
+    "identifier": "keruyun",
+    "url": "https://www.keruyun.com/",
+    "category": "industry",
+    "title": "客如云 餐饮经营"
+  },
+  {
+    "identifier": "meituan-saas",
+    "url": "https://shouyin.meituan.com/",
+    "category": "industry",
+    "title": "美团收银"
+  },
+  {
+    "identifier": "dada-open",
+    "url": "https://newopen.imdada.cn/",
+    "category": "technical-official",
+    "title": "达达开放平台"
+  },
+  {
+    "identifier": "sf-open",
+    "url": "https://open.sf-express.com/",
+    "category": "technical-official",
+    "title": "顺丰开放平台"
+  }
+]

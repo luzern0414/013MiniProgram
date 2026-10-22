@@ -1,0 +1,20 @@
+{
+  "name": "@restaurant/mini-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./style.css": "./src/style.css",
+    "./components/AccessibleInput.vue": "./src/components/AccessibleInput.vue"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "vue": "3.4.21"
+  }
+}

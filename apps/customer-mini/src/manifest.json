@@ -1,0 +1,29 @@
+{
+  "name": "餐饮点餐",
+  "appid": "",
+  "description": "餐饮门店服务",
+  "versionName": "0.1.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "mp-weixin": {
+    "appid": "",
+    "setting": {
+      "urlCheck": true
+    },
+    "usingComponents": true,
+    "permission": {
+      "scope.userLocation": {
+        "desc": "用于在你明确确认后保存收货配送点"
+      }
+    },
+    "requiredPrivateInfos": [
+      "getLocation"
+    ]
+  },
+  "h5": {
+    "title": "点餐",
+    "router": {
+      "mode": "hash"
+    }
+  }
+}

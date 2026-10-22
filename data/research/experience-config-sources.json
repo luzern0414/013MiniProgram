@@ -1,0 +1,230 @@
+{
+  "topic": "餐饮多端主题、模块热插拔与后台配置",
+  "created_at": "2026-10-21T02:51:16.862Z",
+  "decisions": {
+    "theme_mode": "语义主题套件加品牌默认与端级覆盖",
+    "module_mode": "编译期可信注册表加品牌发布与门店覆盖",
+    "adopted_packages": [],
+    "reference_only": [
+      "Tencent/tdesign-miniprogram",
+      "Moonofweisheng/wot-design-uni",
+      "nutui-uniapp/nutui-uniapp",
+      "youzan/vant-weapp",
+      "Flagsmith/flagsmith",
+      "open-feature/js-sdk",
+      "style-dictionary/style-dictionary",
+      "SortableJS/vue.draggable.next"
+    ]
+  },
+  "sources": [
+    {
+      "id": "tdesign-miniprogram-readme",
+      "url": "https://raw.githubusercontent.com/Tencent/tdesign-miniprogram/main/README.md",
+      "category": "github-readme",
+      "license": "MIT",
+      "use": "微信小程序组件、NPM 接入与基础版本边界参考",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "e201a834e8526f852ec250995d338609b8403000c85523e4234e69b1c412d947",
+      "error": null
+    },
+    {
+      "id": "tdesign-miniprogram-license",
+      "url": "https://raw.githubusercontent.com/Tencent/tdesign-miniprogram/main/LICENSE",
+      "category": "license",
+      "license": "MIT",
+      "use": "复用许可核验",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "b3dbcb89dcf4a11abf1b70d043795a3da0c458af16fefd2ff315d9ff5875312f",
+      "error": null
+    },
+    {
+      "id": "wot-design-uni-readme",
+      "url": "https://raw.githubusercontent.com/Moonofweisheng/wot-design-uni/master/README.md",
+      "category": "github-readme",
+      "license": "MIT",
+      "use": "uni-app/Vue3 组件、CSS 变量主题和多平台能力参考",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "0d69d4cd40a56c49b095270f47d6abaa704cd8df98fcb89d7d981e4e7b4c4010",
+      "error": null
+    },
+    {
+      "id": "wot-design-uni-license",
+      "url": "https://raw.githubusercontent.com/Moonofweisheng/wot-design-uni/master/LICENSE",
+      "category": "license",
+      "license": "MIT",
+      "use": "复用许可核验",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "dc9368eba81255faf9bac0dc6d48247905a5f06bd5b031fdffa1dcd90667f489",
+      "error": null
+    },
+    {
+      "id": "nutui-uniapp-readme",
+      "url": "https://raw.githubusercontent.com/nutui-uniapp/nutui-uniapp/main/README.md",
+      "category": "github-readme",
+      "license": "MIT",
+      "use": "uni-app 组件、按需引用和动态主题方案比较",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "00074be51e7435f1cbc61212ec33293f16bdbdb37648f248ae9e7b637f9483e3",
+      "error": null
+    },
+    {
+      "id": "nutui-uniapp-license",
+      "url": "https://raw.githubusercontent.com/nutui-uniapp/nutui-uniapp/main/LICENSE",
+      "category": "license",
+      "license": "MIT",
+      "use": "复用许可核验",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "7c3ff2a1ac1f60a09420b218b3d0fcb4e0f0fa737034234fb9fdd20b1688efdb",
+      "error": null
+    },
+    {
+      "id": "vant-weapp-readme",
+      "url": "https://raw.githubusercontent.com/youzan/vant-weapp/dev/README.md",
+      "category": "github-readme",
+      "license": "MIT",
+      "use": "成熟微信小程序组件交互与可访问控件的备选参考",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "0fd7bdd0700284c3322812b8d4ce530799d5d017c7fc49a6099762a8408dc175",
+      "error": null
+    },
+    {
+      "id": "vant-weapp-license",
+      "url": "https://raw.githubusercontent.com/youzan/vant-weapp/dev/LICENSE",
+      "category": "license",
+      "license": "MIT",
+      "use": "复用许可核验",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "42f4fd3c3d414744ef3d1545a39cba6fbaae6d7f5d20e20900ac60149b82a744",
+      "error": null
+    },
+    {
+      "id": "flagsmith-readme",
+      "url": "https://raw.githubusercontent.com/Flagsmith/flagsmith/main/README.md",
+      "category": "github-readme",
+      "license": "BSD-3-Clause",
+      "use": "远端功能开关、分段、发布管理和客户端密钥边界参考",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "dcf62a4b8116bb40de8df9d6ba0f9882f160026e6fb571d2b69b36a66fd433b7",
+      "error": null
+    },
+    {
+      "id": "openfeature-js-sdk-readme",
+      "url": "https://raw.githubusercontent.com/open-feature/js-sdk/main/README.md",
+      "category": "github-readme",
+      "license": "Apache-2.0",
+      "use": "供应商中立求值接口、默认值与提供者边界参考",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "25ce56090ae375cc9c88c8daef52f77ff9d9488246738cc69403452221b9c818",
+      "error": null
+    },
+    {
+      "id": "openfeature-js-sdk-license",
+      "url": "https://raw.githubusercontent.com/open-feature/js-sdk/main/LICENSE",
+      "category": "license",
+      "license": "Apache-2.0",
+      "use": "复用许可核验",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "f964c4c458fcc3741ac1639dc28bef1e42c016b37cab9fe84400fc3b597dc5ab",
+      "error": null
+    },
+    {
+      "id": "style-dictionary-readme",
+      "url": "https://raw.githubusercontent.com/style-dictionary/style-dictionary/main/README.md",
+      "category": "github-readme",
+      "license": "Apache-2.0",
+      "use": "语义设计令牌单一来源、跨端输出和自动生成思路参考",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "79bf235dacfe00e9cd71624ae898200a0fd6a6d13d0b5b1125ba331566ac1cf9",
+      "error": null
+    },
+    {
+      "id": "style-dictionary-license",
+      "url": "https://raw.githubusercontent.com/style-dictionary/style-dictionary/main/LICENSE",
+      "category": "license",
+      "license": "Apache-2.0",
+      "use": "复用许可核验",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "46ae5f0dc2e06a18cde8b06bdb45abea0b6e28d169e6eff2069536780304cf6e",
+      "error": null
+    },
+    {
+      "id": "vue-draggable-next-readme",
+      "url": "https://raw.githubusercontent.com/SortableJS/vue.draggable.next/master/README.md",
+      "category": "github-readme",
+      "license": "MIT",
+      "use": "后台模块顺序与页面装修拖拽交互的候选复用方案",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "f93945be6e879e8809f22a5a13885604de1d8fe15015a88df5087365e544402d",
+      "error": null
+    },
+    {
+      "id": "vue-draggable-next-license",
+      "url": "https://raw.githubusercontent.com/SortableJS/vue.draggable.next/master/LICENSE",
+      "category": "license",
+      "license": "MIT",
+      "use": "复用许可核验",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "51d704aa90fdccd11edd8c63601d5b46ba6a7158bc3210433543a461ce33151e",
+      "error": null
+    },
+    {
+      "id": "w3c-contrast-minimum",
+      "url": "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html",
+      "category": "official-guidance",
+      "license": "W3C-document-policy",
+      "use": "正文与按钮文字对比度底线",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "a06d8a7dad2b3c9cadf1d93b1a5372d58adbab65be51e4c4680124d4e47c9999",
+      "error": null
+    },
+    {
+      "id": "w3c-nontext-contrast",
+      "url": "https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html",
+      "category": "official-guidance",
+      "license": "W3C-document-policy",
+      "use": "控件边界、焦点和状态图形对比度",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "2f48093e72b1070c07a7d4aa9e9c5c07815607e8af7c46da9b292cd40086bb7a",
+      "error": null
+    },
+    {
+      "id": "mdn-prefers-reduced-motion",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-reduced-motion",
+      "category": "official-guidance",
+      "license": "CC-BY-SA-2.5",
+      "use": "Web/H5 动效降级实现",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "fd9e97676fc3ef9c138570d092a0aa6abc28a2865acca9803ca938e40b18a5e4",
+      "error": null
+    },
+    {
+      "id": "uniapp-tabbar-api",
+      "url": "https://uniapp.dcloud.net.cn/api/ui/tabbar.html",
+      "category": "official-guidance",
+      "license": "vendor-documentation",
+      "use": "动态导航能力与原生 TabBar 边界核验",
+      "status": 200,
+      "retrieved_at": "2026-10-21T02:51:16.862Z",
+      "sha256": "96e3b13c12a33d0bb7ab20ed7c393da3ea0e3fd420e4ab3d7b351cf399cea1b9",
+      "error": null
+    }
+  ]
+}

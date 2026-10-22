@@ -1,0 +1,44 @@
+{
+  "name": "restaurant-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "db:start": "node scripts/db.mjs start",
+    "db:stop": "node scripts/db.mjs stop",
+    "db:verify": "node scripts/db.mjs verify",
+    "db:backup": "node scripts/backup.mjs backup",
+    "db:restore": "node scripts/backup.mjs restore",
+    "db:migrate": "pnpm --filter @restaurant/api db:migrate",
+    "db:seed": "pnpm --filter @restaurant/api db:seed",
+    "dev:api": "pnpm --filter @restaurant/api dev",
+    "dev:web": "pnpm --filter @restaurant/merchant-web dev",
+    "dev:customer": "pnpm --filter @restaurant/customer-mini dev:h5",
+    "dev:merchant": "pnpm --filter @restaurant/merchant-mini dev:h5",
+    "test": "pnpm -r --if-present test",
+    "test:runtime": "node --test tests/runtime/*.test.mjs",
+    "test:integration": "node scripts/integration.mjs",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "local:api": "node scripts/local.mjs api",
+    "local:api:start": "node scripts/local.mjs api:start",
+    "local:migrate": "node scripts/local.mjs db:migrate",
+    "local:seed": "node scripts/local.mjs db:seed",
+    "local:web": "node scripts/local.mjs web",
+    "local:customer": "node scripts/local.mjs customer",
+    "local:merchant": "node scripts/local.mjs merchant"
+  },
+  "pnpm": {
+    "overrides": { "vue-router": "4.5.1" }
+  },
+  "devDependencies": {
+    "embedded-postgres": "16.14.0-beta.17",
+    "pg": "8.16.3",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  }
+}

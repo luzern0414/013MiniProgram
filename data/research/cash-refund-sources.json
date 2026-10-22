@@ -1,0 +1,57 @@
+[
+  {
+    "id": "medusa-refund-payments",
+    "url": "https://github.com/medusajs/medusa/blob/61c19c3099d58b3b3900da70d92a647c33b09bb5/www/apps/user-guide/app/orders/payments/page.mdx",
+    "localPath": ".firecrawl/medusa-refund-payments.md",
+    "kind": "full-file-extraction",
+    "licenseEvidence": "NOASSERTION; concepts only, no code copied",
+    "excerpt": "Refunding payments is irreversible.",
+    "readDate": "2026-10-20",
+    "method": "firecrawl-cli developer followed by scrape where full page indicated",
+    "sha256OfSavedExtraction": "88e2c14e497918f0607d83601ecb1366e14c5a5cc475c80f8b803166959d1f98"
+  },
+  {
+    "id": "medusa-refund-idempotency",
+    "url": "https://github.com/medusajs/medusa/pull/16964",
+    "localPath": ".firecrawl/medusa-refund-idempotency.md",
+    "kind": "full-page-extraction",
+    "licenseEvidence": "NOASSERTION; concepts only, no code copied",
+    "excerpt": "Then, when the `idempotency_key` is provided, the refund is retried rather than creating a new refund.",
+    "readDate": "2026-10-20",
+    "method": "firecrawl-cli developer followed by scrape where full page indicated",
+    "sha256OfSavedExtraction": "b575ecda174ff58d070db57c9eb2e5d7d6c9ccaeb4a8778ac1d1ca41cb17c3cb"
+  },
+  {
+    "id": "frappe-books-pos-shifts",
+    "url": "https://docs.frappe.io/books/transactional-entries.md",
+    "localPath": ".firecrawl/frappe-books-pos-shifts.md",
+    "kind": "full-page-extraction",
+    "licenseEvidence": "documentation only; no code copied",
+    "excerpt": "Expected is the opening amount, plus the POS payments in the shift, minus the refunds.",
+    "readDate": "2026-10-20",
+    "method": "firecrawl-cli developer followed by scrape where full page indicated",
+    "sha256OfSavedExtraction": "198e7df3b4e1a0b5f59177385e0f722e366d83b69e433c7eeeffcb3730a38405"
+  },
+  {
+    "id": "erpnext-closing-history",
+    "url": "https://github.com/frappe/erpnext/issues/25638",
+    "localPath": ".firecrawl/pos-closing-specific.json",
+    "kind": "developer-index-excerpt",
+    "licenseEvidence": "GPL-3.0 index; no code copied",
+    "excerpt": "Expected result should deduct change; historical issue only, no resolution verified",
+    "readDate": "2026-10-20",
+    "method": "firecrawl-cli developer followed by scrape where full page indicated",
+    "sha256OfSavedExtraction": "38ca0760991fd6f6bb02faf646b6cce1dad51cdd49ed351f26f7234a965d948e"
+  },
+  {
+    "id": "excluded-wrong-redirect",
+    "url": "https://docs.frappe.io/erpnext/user/manual/en/pos-closing-entry",
+    "localPath": ".firecrawl/erpnext-pos-closing.md",
+    "kind": "excluded-wrong-content",
+    "licenseEvidence": "not used",
+    "excerpt": "Actual page: Stock Closing Entry; not evidence of POS closing",
+    "readDate": "2026-10-20",
+    "method": "firecrawl-cli developer followed by scrape where full page indicated",
+    "sha256OfSavedExtraction": "da4113d847d41e0f57ef9fbb0171fd461218db20817ebc632fc9499b6803600a"
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "name": "@restaurant/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "start": "node dist/src/main.js",
+    "test": "tsx --test tests/domain.test.ts",
+    "test:integration": "tsx --test tests/integration.test.ts",
+    "test:staff": "tsx --test tests/staff-access.test.ts",
+    "test:bootstrap": "tsx --test tests/bootstrap-owner.test.ts",
+    "owner:bootstrap": "tsx src/commands/bootstrap-owner.ts",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.1.0",
+    "@nestjs/core": "^11.1.0",
+    "@nestjs/platform-express": "^11.1.0",
+    "@prisma/client": "6.19.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.15.0",
+    "prisma": "6.19.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.3"
+  },
+  "prisma": {"seed": "tsx prisma/seed.ts"}
+}

@@ -1,0 +1,334 @@
+e7526b8 fix: protect catalog migration fixture cleanup and align unit relation
+75b1663 docs(catalog): record migration checks and UI compatibility rules
+ .superpowers/sdd/catalog-settings-ui-brief.md      |  4 +-
+ .superpowers/sdd/progress.md                       |  1 +
+ apps/api/prisma/schema.prisma                      |  2 +-
+ apps/api/tests/catalog-admin.test.ts               | 50 +++++++++++++++++++++-
+ data/research/variant-inventory-search.json        | 38 ++++++++++++++++
+ docs/acceptance/2026-10-20-local-r1.md             |  6 +++
+ .../2026-10-20-variant-inventory-research.md       | 27 ++++++++++++
+ .../plans/2026-10-20-catalog-settings.md           |  2 +-
+ docs/tasks/catalog-admin-report.md                 | 21 +++++++++
+ 9 files changed, 146 insertions(+), 5 deletions(-)
+diff --git a/.superpowers/sdd/catalog-settings-ui-brief.md b/.superpowers/sdd/catalog-settings-ui-brief.md
+index a7afb2d..7be276c 100644
+--- a/.superpowers/sdd/catalog-settings-ui-brief.md
++++ b/.superpowers/sdd/catalog-settings-ui-brief.md
+@@ -1,14 +1,16 @@
+ ### Task 2: 电脑端与商户小程序维护入口及真实验收
+ 
+ **Files:** apps/merchant-web/src/CatalogSettings.vue与分类/单位编辑组件，Products.vue；apps/merchant-mini/src/components/CatalogSettings.vue与编辑组件，商品页入口；packages/mini-core/src/catalog-settings.mjs及有意义的行为测试；docs/tasks/catalog-settings-ui-report.md；README/config/验收台账。
+ 
+ **Interfaces:** 消费Task1实际合约；复用已有useResource/useMutation/Modal与小程序AccessibleInput；不复制网络和会话实现。
+ 
++**Compatibility details:** Task1分类/单位版本冲突返回`STATE_CONFLICT`（409），名称冲突为`NAME_CONFLICT`，引用删除为`REFERENCE_CONFLICT`；按真实代码处理而非假定员工模块的`VERSION_CONFLICT`。商品更新时若未改变单位，省略`unit`及`unitId`，使停用旧单位能保留；发生单位选择变更才发送`unitId`。`visibleStoreIds:null`表示现在及未来所有门店；数组表示显式集合，`[]`表示全部门店隐藏。读取后的`canManageBrand`决定共享配置是否可编辑。
++
+ - [ ] 写提交校验/版本冲突行为测试并观察RED；沿用staff controller的有限状态模式但不复制一整套无关逻辑。旧revision冲突后锁定写入，必须重新读取再编辑；未知写入结果提示刷新核对，不自动重发。
+-- [ ] Web商品页增加“分类与单位”入口，分类列表显示商品引用数、排序、启停和可见门店；新建/编辑/删除均真实请求；引用删除错误保留表单且显示原因。单位列表支持新建、改名、禁用和删除；商品新建/编辑用有效单位选择，禁用旧单位显示原值且允许保留。
++- [ ] Web商品页增加“分类与单位”入口，分类列表显示商品引用数、排序、启停和可见门店；新建/编辑/删除均真实请求；引用删除错误保留表单且显示原因。单位列表支持新建、改名、禁用和删除；商品新建/编辑用有效单位选择，禁用旧单位显示原值且允许保留。商品编辑允许调整分类，便于真实解除旧分类引用；仅在选择变更时发送categoryId，停用或隐藏的当前分类可保留但不能作为新选择。两端保持同一规则。
+ - [ ] 商户小程序商品页提供同样维护能力，分离组件，控件使用uni组件；H5标签可定位、点击聚焦，微信构建不依赖DOM处理业务。canManageBrand=false时只读展示，不提供假可用保存按钮。
+ - [ ] 真实页面验收：Web新建分类及单位，新增商品关联，商户H5刷新读到；改单位名两端一致；分类仅梧桐里可见、顾客另一店菜单无该分类；停用后顾客刷新消失且之前报价下单失败；恢复后可重新报价；引用删除被拒，空分类/未引用单位可删除，刷新保持。
+ - [ ] SQL核查分类映射/单位关系、审计、现有订单现金总额/库存不被本轮维护误改。低权限真实会话操作被拒。执行相关行为测试及Web/两小程序H5与微信构建，独立审查后更新REQ030/031四状态、README及progress。
+ 
+ 品牌商品模板、规格组合/属性、加料管理和导入仍单独计划；本计划不将这些空缺标记完成。引用调研见2026-10-20-restaurant-research.md中的yshop/litemall模型与事务分析，采用其领域拆分和库存模式，不未经检验搬运Java实现。
+ 
+diff --git a/.superpowers/sdd/progress.md b/.superpowers/sdd/progress.md
+index 6ce8717..fad8fa3 100644
+--- a/.superpowers/sdd/progress.md
++++ b/.superpowers/sdd/progress.md
+@@ -14,10 +14,11 @@ Staff access plan complete: Task1 API commit326b2ec and Task2 UI commit2030e2d,
+ Scope remains full90 requirements; R1 does not complete overall goal. Design A explicitly approved by user. No production/WeChat payment/true-device verification claimed.
+ 
+ 2026-10-20 Staff Task2 complete: independent staff_ui_review approved implementation+accessibility fixes; Web17/17 mini18/18 and all frontend builds pass. Actual Web→merchantH5 account/grant/reset/disable, merchantH5→Web create, SQL enabled=false revision4 sessions0 pass. H5 getByLabel uniqueness and label focus pass after native-only aria-label fix. Full evidence docs/acceptance/2026-10-20-local-r1.md. Next local operations Task1 bootstrap; no whole-goal completion.
+ 
+ 
+ 2026-10-20 Local operations Task1 complete: bootstrap_owner implemented; bootstrap_review spec+quality approved after config/secrets docfix. RealDB3+workspace44+runtime11+staff3+sourceDB1+HTTP11 pass; root independent randomschema CLI/production-modeHTTP/SQL pass with cleanup. tsc built API and owned3000 restarted (session13075), healthok. No default password/OWNER recovery/productiondeploy claims. Next Task2 backup; tools pg16.15 available in data/runtime/tools/postgresql-16.15/pgsql/bin.
+ 2026-10-20 Local operations Task2 backup_runtime dispatched fresh implementer, brief .superpowers/sdd/backup-brief.md; source services stay running, no full-goal completion. Following catalog-settings plan ready but not yet dispatched.
+ 2026-10-20 Bootstrap test guard centralized commit96e2ffc; focused4/4 and bootstrap_review approved. Correction: root initially misread an earlier source excerpt; original626a5bf final code already guarded both DB-writing tests. No missing DB guard in committed code; improvement adds module-load fail-fast + filesystem-only wrong-schema childprocess regression. User-facing correction delivered. Backup task resumed.
+ 2026-10-20 Local operations Task2 complete: backup_runtime focused11/runtime22/22, backup_review spec+qualityapproved. RootactualCLIbackup fccc87b40367e33e5c0c8d1f0d20d8ab sha31635b382dd0e1c2e6cc3f5d0e87f178f7663f54fc415b403fc6e9f21bd983ec -> restore_f51729f327fe53751420304915dec2ea. SQLdevelopment5orders/3cash8380/stock14reserved0/CMS/public4orders equal; source27sessions/restored0. NewDBretainedforinspection, sourceAPIhealthconnected noautoURLswitch. Full90scopecontinues; nextcatalogsettingsTask1.
+ 2026-10-20 Catalog Task1 catalog_admin dispatched fresh implementer; exact brief .superpowers/sdd/catalog-admin-brief.md. Clarified null visibleStoreIds=allcurrentfuture, []=none, CategoryallStorestrue default. Needs6thmigration backfillpreservingbusiness, requestrootbeforePrismagenerate/APIstop. Task2 UI brief ready; not yetdispatched.
++2026-10-20 Catalog Task1 migration fixture passed; root applied006 only to development using pnpm local:migrate, tsc exit0, API3000 restored session4968 healthok/connected. IndependentSQL comparison to retained restoreDB stillequal5orders/3cash8380/stock14reserved0/CMS/public4orders. API task tests/review ongoing; this is runtime/migration evidence, not full catalog UI acceptance. Existing regression suites will use a separately created random test_catalog_regression_* database with exact guarded schemas, preserving all source schemas.
+diff --git a/apps/api/prisma/schema.prisma b/apps/api/prisma/schema.prisma
+index 246f08a..52395d1 100644
+--- a/apps/api/prisma/schema.prisma
++++ b/apps/api/prisma/schema.prisma
+@@ -119,21 +119,21 @@ model Product {
+   id          String     @id @default(cuid())
+   storeId     String
+   store       Store      @relation(fields: [storeId], references: [id])
+   categoryId  String
+   category    Category   @relation(fields: [categoryId], references: [id])
+   name        String
+   description String     @default("")
+   imageUrl    String?
+   unit        String     @default("份")
+   unitId      String?
+-  unitDefinition Unit? @relation(fields: [unitId], references: [id])
++  unitDefinition Unit? @relation(fields: [unitId], references: [id], onDelete: Restrict)
+   isAvailable Boolean    @default(true)
+   skus        Sku[]
+   modifiers   Modifier[]
+   @@index([unitId])
+ }
+ 
+ model Sku {
+   id        String  @id @default(cuid())
+   productId String
+   product   Product @relation(fields: [productId], references: [id])
+diff --git a/apps/api/tests/catalog-admin.test.ts b/apps/api/tests/catalog-admin.test.ts
+index be2b435..3434323 100644
+--- a/apps/api/tests/catalog-admin.test.ts
++++ b/apps/api/tests/catalog-admin.test.ts
+@@ -32,26 +32,63 @@ test('catalog runner preserves an existing schema and sentinel on create-name co
+     await client.query(`CREATE SCHEMA "${schema}"`);created=true;
+     await client.query(`CREATE TABLE "${schema}".sentinel (value integer); INSERT INTO "${schema}".sentinel VALUES (42)`);
+     await writeFile(preload,`require('node:crypto').randomBytes=()=>Buffer.from('${hex}','hex');`);
+     const result=spawnSync(process.execPath,['--require',preload,'.superpowers/sdd/catalog-runner.cjs'],{cwd:resolve(__dirname,'../../..'),env:{...process.env},encoding:'utf8',windowsHide:true});
+     assert.equal(result.status,1,'colliding runner must fail safely');
+     assert.equal((await client.query('SELECT 1 FROM pg_namespace WHERE nspname=$1',[schema])).rowCount,1,'collision must preserve pre-existing schema');
+     assert.equal((await client.query(`SELECT value FROM "${schema}".sentinel`)).rows[0].value,42);
+   } finally {if(created) await client.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);await client.end();await rm(preload,{force:true});await rmdir(directory);}
+ });
+ 
++test('catalog migration fixture preserves an existing schema and sentinel on create-name collision',async()=>{
++  const parentSchema='test_catalog_'+randomBytes(6).toString('hex'),schema=parentSchema+'_migration';
++  const client=new pg.Client({connectionString:process.env.DATABASE_URL});await client.connect();
++  let created=false,identity: {oid:number;nspowner:number}|undefined;
++  try {
++    await client.query(`CREATE SCHEMA "${schema}"`);created=true;
++    identity=(await client.query('SELECT oid,nspowner FROM pg_namespace WHERE nspname=$1',[schema])).rows[0];
++    await client.query(`CREATE TABLE "${schema}".sentinel (value integer); INSERT INTO "${schema}".sentinel VALUES (42)`);
++    const url=new URL(process.env.DATABASE_URL!);url.searchParams.set('schema',parentSchema);
++    const env={...process.env,DATABASE_URL:url.href,TSX_TSCONFIG_PATH:resolve(__dirname,'../tsconfig.json')};delete env.NODE_TEST_CONTEXT;
++    const result=spawnSync(process.execPath,['--import','tsx','--test','--test-name-pattern','^catalog migration preserves legacy','tests/catalog-admin.test.ts'],{cwd:resolve(__dirname,'..'),env,encoding:'utf8',windowsHide:true});
++    assert.equal(result.status,1,'colliding migration fixture must fail safely');
++    assert.match(result.stdout+result.stderr,/already exists/,'child must reach the CREATE SCHEMA collision');
++    assert.deepEqual((await client.query('SELECT oid,nspowner FROM pg_namespace WHERE nspname=$1',[schema])).rows[0],identity,'collision must preserve pre-existing schema identity');
++    assert.equal((await client.query(`SELECT value FROM "${schema}".sentinel`)).rows[0].value,42);
++  } finally {
++    try {
++      if(created) {
++        const current=(await client.query('SELECT oid,nspowner FROM pg_namespace WHERE nspname=$1',[schema])).rows[0];
++        if(current) {
++          assert.deepEqual(current,identity,'collision regression cleanup must own the schema');
++          await client.query(`DROP SCHEMA "${schema}" CASCADE`);
++        }
++      }
++    } finally {await client.end();}
++  }
++});
++
++test('catalog Prisma schema restricts deletion of referenced units',()=>{
++  const result=spawnSync(process.execPath,['node_modules/prisma/build/index.js','migrate','diff','--from-empty','--to-schema-datamodel','prisma/schema.prisma','--script'],{cwd:resolve(__dirname,'..'),env:{...process.env},encoding:'utf8',windowsHide:true});
++  assert.equal(result.status,0,result.stdout+result.stderr);
++  assert.match(result.stdout,/ADD CONSTRAINT "Product_unitId_fkey" FOREIGN KEY \("unitId"\) REFERENCES "Unit"\("id"\) ON DELETE RESTRICT ON UPDATE CASCADE/);
++});
++
+ test('catalog migration preserves legacy products, orders, inventory, sessions and unit text',async()=>{
+   const schema=new URL(process.env.DATABASE_URL!).searchParams.get('schema')!+'_migration';
+   assert.match(schema,/^test_catalog_[a-z0-9_]+$/);
+   const client=new pg.Client({connectionString:process.env.DATABASE_URL}); await client.connect();
++  let created=false,identity: {oid:number;nspowner:number}|undefined;
+   try {
+-    await client.query(`CREATE SCHEMA "${schema}"`); await client.query(`SET search_path TO "${schema}"`);
++    await client.query(`CREATE SCHEMA "${schema}"`);created=true;
++    identity=(await client.query('SELECT oid,nspowner FROM pg_namespace WHERE nspname=$1',[schema])).rows[0];
++    await client.query(`SET search_path TO "${schema}"`);
+     for(const name of ['202610200001_initial','202610200002_integrity','202610200003_stock_capacity','202610200004_payment_expiry','202610200005_staff_access']) {
+       await client.query(await readFile(resolve(__dirname,'../prisma/migrations',name,'migration.sql'),'utf8'));
+     }
+     await client.query(`INSERT INTO "Brand" (id,name) VALUES ('legacy-b','旧品牌'),('other-b','其他品牌');
+       INSERT INTO "Store" (id,"brandId",name,address,phone) VALUES ('legacy-s','legacy-b','旧店','',''),('other-s','other-b','其他店','','');
+       INSERT INTO "Category" (id,"brandId",name) VALUES ('legacy-c','legacy-b','旧分类'),('other-c','other-b','其他分类');
+       INSERT INTO "Product" (id,"storeId","categoryId",name,unit) VALUES ('legacy-p1','legacy-s','legacy-c','重复商品',' 份 '),('legacy-p2','legacy-s','legacy-c','重复商品',' 份 '),('legacy-p3','legacy-s','legacy-c','杯装','杯'),('other-p','other-s','other-c','其他',' 份 ');
+       INSERT INTO "Sku" (id,"productId",name,"priceFen",stock,reserved) VALUES ('legacy-sku','legacy-p1','标准',100,7,2);
+       INSERT INTO "User" (id,"brandId",name,role) VALUES ('legacy-user','legacy-b','旧顾客','CUSTOMER');
+       INSERT INTO "Session" (id,"tokenHash","userId","expiresAt") VALUES ('legacy-session','legacy-hash','legacy-user',now()+interval '1 day');
+@@ -61,21 +98,30 @@ test('catalog migration preserves legacy products, orders, inventory, sessions a
+     const tables=['Order','Quote','Sku','Session']; const snapshots=new Map<string,string>();
+     for(const table of tables) snapshots.set(table,JSON.stringify((await client.query(`SELECT * FROM "${table}" ORDER BY id`)).rows));
+     await client.query(await readFile(resolve(__dirname,'../prisma/migrations/202610200006_catalog_settings/migration.sql'),'utf8'));
+     const products=(await client.query('SELECT * FROM "Product" ORDER BY id')).rows;
+     assert.deepEqual(products.map(({unitId,...p}:any)=>p),beforeProducts);
+     assert.ok(products.every((p:any)=>p.unitId)); assert.equal(products.find((p:any)=>p.id==='legacy-p1').unitId,products.find((p:any)=>p.id==='legacy-p2').unitId);
+     assert.notEqual(products.find((p:any)=>p.id==='legacy-p1').unitId,products.find((p:any)=>p.id==='other-p').unitId);
+     assert.equal((await client.query('SELECT * FROM "Unit"')).rowCount,3);
+     assert.equal((await client.query('SELECT * FROM "Category" WHERE NOT enabled OR revision<>0 OR NOT "allStores"')).rowCount,0);
+     for(const table of tables) assert.equal(JSON.stringify((await client.query(`SELECT * FROM "${table}" ORDER BY id`)).rows),snapshots.get(table),table+' unchanged');
+-  } finally {await client.query('ROLLBACK');await client.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);await client.end();}
++  } finally {
++    try {
++      await client.query('ROLLBACK');
++      if(created) {
++        const current=(await client.query('SELECT oid,nspowner FROM pg_namespace WHERE nspname=$1',[schema])).rows[0];
++        if(!identity || JSON.stringify(current)!==JSON.stringify(identity)) throw new Error('Catalog migration schema identity changed; preserved');
++        await client.query(`DROP SCHEMA "${schema}" CASCADE`);
++      }
++    } finally {await client.end();}
++  }
+ });
+ 
+ test('catalog settings enforce real database permissions, revisions, visibility, units and existing orders', async () => {
+   process.env.NODE_ENV = 'test'; process.env.DEV_AUTH_ENABLED = 'true'; process.env.DEV_SEED_ENABLED = 'true';
+   const db = new PrismaClient();
+   await seed(db);
+   const app = await createApp(); await app.listen(0, '127.0.0.1');
+   const base = await app.getUrl() + '/api/v1', a = 'experience-store-a', b = 'experience-store-b';
+   async function req(path: string, token?: string, body?: any, method?: string, key?: string) {
+     const response = await fetch(base + path, {method: method || (body ? 'POST' : 'GET'), headers: {'Content-Type':'application/json', ...(token ? {Authorization:`Bearer ${token}`} : {}), ...(key ? {'Idempotency-Key':key} : {})}, body: body ? JSON.stringify(body) : undefined});
+diff --git a/data/research/variant-inventory-search.json b/data/research/variant-inventory-search.json
+new file mode 100644
+index 0000000..850e5d5
+--- /dev/null
++++ b/data/research/variant-inventory-search.json
+@@ -0,0 +1,38 @@
++{
++  "success": true,
++  "partial": false,
++  "results": [
++    {
++      "id": "doc:https://github.com/medusajs/medusa/blob/61c19c3099d58b3b3900da70d92a647c33b09bb5/www/apps/resources/app/commerce-modules/product/variant-inventory/page.mdx",
++      "url": "https://github.com/medusajs/medusa/blob/61c19c3099d58b3b3900da70d92a647c33b09bb5/www/apps/resources/app/commerce-modules/product/variant-inventory/page.mdx",
++      "title": "Product Variant Inventory",
++      "passages": [
++        {
++          "text": "# {metadata.title}\n## Configure Inventory Management of Product Variants\nWhen `manage_inventory` is disabled, the Medusa application always considers the product variant to be in stock.\n\n## How the Medusa Application Manages Inventory\nThe inventory item has one or more locations, called inventory levels, that represent the stock quantity of the product variant at a specific location. This allows you to manage inventory across multiple warehouses, such as a warehouse in the US and another in Europe.\n\nDiagram showcasing the link between a variant and its inventory item, and the inventory item's level.\n\nThe Medusa application represents and manages stock locations using the Stock Location Module. It creates a read-only link between the `InventoryLevel` and `StockLocation` data models so that it can retrieve the stock location of an inventory level.\n\nDiagram showcasing the read-only link between an inventory level and a stock location\n\nLearn more about the Stock Location Module in the Stock Location Module's documentation.\n\n### Product Inventory in Storefronts\nThe Medusa application links sales channels to stock locations, indicating the locations available for a specific sales channel. So, all inventory-related operations are scoped by the sales channel and its associated stock locations.\n\nFor example, the availability of a product variant is determined by the `stocked_quantity` of its inventory level at the stock location linked to the storefront's sales channel."
++        }
++      ],
++      "license": "NOASSERTION"
++    },
++    {
++      "id": "doc:https://medusajs.com/blog/announcing-multi-warehouse",
++      "url": "https://medusajs.com/blog/announcing-multi-warehouse",
++      "title": "Announcing Multi-Warehouse",
++      "passages": [
++        {
++          "text": "# Announcing Multi-Warehouse\nWe are excited to announce the release of two new modules built with the new Module SDK: Inventory and Stock Locations.\n\n## Flexible fulfillment options\n### Managing inventory\nLocations are managed from the new sidebar item **Inventory** in a dedicated **Locations** tab.\n\n## Managing Locations and Sales Channels\nReservations can be used to allocate stock at an inventory level.\n\n### Reservations\nInventory Levels hold stock information for an inventory item at a specific location.\n\n### Inventory Item Levels\nInventory Items represent your stock-kept items.\n\n## New primitives to manage inventory\nMedusa now offers a comprehensive, ready-to-use solution for effectively managing inventory across various locations and streamlining order fulfillment processes.\n\nWe are excited to announce the release of two new modules built with the new Module SDK: Inventory and Stock Locations."
++        }
++      ]
++    },
++    {
++      "id": "doc:https://github.com/medusajs/medusa/blob/61c19c3099d58b3b3900da70d92a647c33b09bb5/www/apps/resources/app/commerce-modules/inventory/links-to-other-modules/page.mdx",
++      "url": "https://github.com/medusajs/medusa/blob/61c19c3099d58b3b3900da70d92a647c33b09bb5/www/apps/resources/app/commerce-modules/inventory/links-to-other-modules/page.mdx",
++      "title": "{metadata.title}",
++      "passages": [
++        {
++          "text": "# {metadata.title}\n## Summary\n\n## Product Module\nEach product variant has different inventory details.\n\nA product variant whose `manage_inventory` property is enabled has an associated inventory item.\n\nLearn more about product variant's inventory management in this guide.\n\n### Retrieve with Query\n\n### Manage with Link\nTo manage the variants of an inventory item, use Link:\n\n## Stock Location Module\nMedusa defines a read-only link between the `InventoryLevel` data model and the Stock Location Module's `StockLocation` data model. This means you can retrieve the details of an inventory level's stock locations, but you don't manage the links in a pivot table in the database. The stock location of an inventory level is determined by the `location_id` property of the `InventoryLevel` data model."
++        }
++      ],
++      "license": "NOASSERTION"
++    }
++  ]
++}
+diff --git a/docs/acceptance/2026-10-20-local-r1.md b/docs/acceptance/2026-10-20-local-r1.md
+index 63df82c..86dc3e4 100644
+--- a/docs/acceptance/2026-10-20-local-r1.md
++++ b/docs/acceptance/2026-10-20-local-r1.md
+@@ -64,10 +64,16 @@ H5表单可访问性：先实际复现原生输入无标签、随后包装层与
+ 
+ 新增初始化真实DB测试3/3；员工DB3/3、API领域9、Web17、mini-core18、runtime11、源码业务DB1及原构建HTTP11回归通过。源码tsc编译成功后已重启本项目3000 API，新进程health返回ok/connected。现有体验OWNER仍保持开发身份，未被赋予默认密码；本轮仅验证本地隔离运行，未部署生产。POSIX权限分支未在当前Windows主机执行，OWNER密码恢复另行实施。
+ 
+ ## 当前开发库整库备份恢复演练
+ 
+ 独立任务审查通过后，实际执行`pnpm db:backup`及`pnpm db:restore -- <archive>`。备份在data/backups/backup_fccc87b40367e33e5c0c8d1f0d20d8ab/database.dump，238718字节，SHA256为31635b382dd0e1c2e6cc3f5d0e87f178f7663f54fc415b403fc6e9f21bd983ec；清单98863字节，包含development、public及现存4个隔离测试schema，共288条约束。该目录被Git忽略且使用真实Windows私人ACL，归档包含业务和凭据，不公开其内容。
+ 
+ 恢复生成独立数据库restore_f51729f327fe53751420304915dec2ea，脚本全量清单核验通过后撤销恢复库27条会话。协调器另用SQL比较源库和新库：development订单5、现金3笔共8380分、验收商品priceFen3080/stock14/reserved0、已发布标题“一餐好饭，认真现做”、public历史订单4，全部一致。源库仍27会话，恢复库0；新库所有者和本次运行标记匹配。当前API仍连接原restaurant_dev，health为ok/connected。恢复库保留供检查，未启动该库的API，也未切换配置。
+ 
+ 备份专项11/11、完整runtime22/22、语法检查通过；独立backup_review审查规范及代码质量通过。SQL核查脚本output/playwright/backup-sql-check.mjs不输出凭据。本地演练不代表生产灾备、大库性能、异地加密存储或POSIX部署已验证。
++
++## 分类与单位迁移检查（页面验收待补）
++
++协调器实际执行 `pnpm local:migrate`，将第6次迁移 `202610200006_catalog_settings` 应用到 development；原 public 和业务记录保留。`tsc -p tsconfig.json` 退出0后启动 API，health 返回 ok/connected。再次运行独立 SQL 对照脚本，源库与上节恢复库的订单5笔、现金3笔共8380分、验收商品stock14/reserved0、已发布内容及public订单4笔仍一致。
++
++以上仅证明本轮开发库迁移、服务恢复及已有业务数据核对。分类/单位维护页面及顾客菜单联动仍待实际操作验收，不提前标记 REQ-030/031 完成。
+diff --git a/docs/research/2026-10-20-variant-inventory-research.md b/docs/research/2026-10-20-variant-inventory-research.md
+new file mode 100644
+index 0000000..8176288
+--- /dev/null
++++ b/docs/research/2026-10-20-variant-inventory-research.md
+@@ -0,0 +1,27 @@
++# 规格、属性与加料的下一步调研
++
++日期：2026-10-20。分类与单位仍在实施；本文仅记录后续商品配置的依据，不代表这些功能已经实现。
++
++本轮通过 Firecrawl developer 的免登录索引实际搜索了规格身份、库存位置与更新逻辑。保留的完整结果在 `data/research/variant-inventory-search.json`；该文件是索引返回的摘录，不是本轮重新抓取的完整源码。索引对 Medusa 文档的许可标记为 `NOASSERTION`，本项目仅参考领域概念，不复制其代码，也不据此认定仓库许可。
++
++## 可核查证据
++
++- [Medusa Product Variant Inventory，固定提交的文档](https://github.com/medusajs/medusa/blob/61c19c3099d58b3b3900da70d92a647c33b09bb5/www/apps/resources/app/commerce-modules/product/variant-inventory/page.mdx)：摘录明确将库存定位为某个库存项目在某个地点的数量，并以销售渠道关联的地点决定可售量。
++- [Medusa 库存与商品关系](https://github.com/medusajs/medusa/blob/61c19c3099d58b3b3900da70d92a647c33b09bb5/www/apps/resources/app/commerce-modules/inventory/links-to-other-modules/page.mdx)：每个商品规格有各自库存信息，启用库存管理的规格关联库存项目。
++- 本项目已实际下载的 yshop 固定提交源码见 `2026-10-20-catalog-research.md`：按商品与规格组合定位既有规格，商品及规格事务保存；具体 URL、HTTP 状态和 SHA256 见 `data/research/catalog-sources.json`。
++
++## 对当前代码的具体影响
++
++当前 `Sku`、`Modifier` 已各有门店商品关系、整数分价格、可售库存和预占库存；下单及取消按稳定顺序更新它们。沿用这条已验证链路，不能为了提供编辑面板而删除并重建既有规格、清空预占或重算历史订单。
++
++后续需要分别解决：
++
++1. 规格组合的唯一标识与启停。名字和展示顺序可变，身份应稳定；同一个商品不能重复创建相同组合。变更后旧报价必须重新检查可售状态及价格。
++2. 不加价的口味属性及选择规则。必选、最少和最多选项由后端验证；订单保存名称与选项快照。属性选项不应通过伪造零价库存加料实现。
++3. 加料的启停、价格和库存编辑。已有加料预占保留，停用阻止新报价与旧报价创建，已有订单取消仍能释放原预占。
++4. 多人编辑的版本冲突。配置提交以版本和事务控制，库存修改要保留并发下单造成的预占变化，未知提交结果需重新读取核对。
++5. 品牌菜品模板与门店经营配置仍是另一项差距。当前门店 SKU 不等于已实现品牌模板；本轮不会把 REQ-029 或商品导入标记完成。
++
++## 验收边界
++
++后续实现应在两种商户界面实际新建和修改，在顾客界面重新读取并选择，随后核查报价、订单快照、库存预占和取消释放。已有现金收款与履约保持可用。只有真实页面与 SQL 闭环后才能更新相关需求状态；索引命中或阅读源码不构成产品验收。
+diff --git a/docs/superpowers/plans/2026-10-20-catalog-settings.md b/docs/superpowers/plans/2026-10-20-catalog-settings.md
+index 9604ef9..0cf89f7 100644
+--- a/docs/superpowers/plans/2026-10-20-catalog-settings.md
++++ b/docs/superpowers/plans/2026-10-20-catalog-settings.md
+@@ -46,16 +46,16 @@ DELETE /merchant/units/:id {storeId,expectedRevision}
+ - [ ] Public catalog隐藏disabled或本店不可见分类及其商品。Quote与create均核实category enabled及可见性，旧报价遇停用/隐藏拒绝409并提示刷新；既有订单支付/履约/取消正常保持，不能因目录变化丢失释放预占能力。
+ - [ ] 实际运行新DB测试、既有staff/bootstrap/domain/HTTP回归与tsc。Prisma generate需要停止项目API，先通知协调器管理进程；不擅自杀未知PID。独立审查后再记录通过；不得提前标记REQ030/031整项verified。
+ 
+ ### Task 2: 电脑端与商户小程序维护入口及真实验收
+ 
+ **Files:** apps/merchant-web/src/CatalogSettings.vue与分类/单位编辑组件，Products.vue；apps/merchant-mini/src/components/CatalogSettings.vue与编辑组件，商品页入口；packages/mini-core/src/catalog-settings.mjs及有意义的行为测试；docs/tasks/catalog-settings-ui-report.md；README/config/验收台账。
+ 
+ **Interfaces:** 消费Task1实际合约；复用已有useResource/useMutation/Modal与小程序AccessibleInput；不复制网络和会话实现。
+ 
+ - [ ] 写提交校验/版本冲突行为测试并观察RED；沿用staff controller的有限状态模式但不复制一整套无关逻辑。旧revision冲突后锁定写入，必须重新读取再编辑；未知写入结果提示刷新核对，不自动重发。
+-- [ ] Web商品页增加“分类与单位”入口，分类列表显示商品引用数、排序、启停和可见门店；新建/编辑/删除均真实请求；引用删除错误保留表单且显示原因。单位列表支持新建、改名、禁用和删除；商品新建/编辑用有效单位选择，禁用旧单位显示原值且允许保留。
++- [ ] Web商品页增加“分类与单位”入口，分类列表显示商品引用数、排序、启停和可见门店；新建/编辑/删除均真实请求；引用删除错误保留表单且显示原因。单位列表支持新建、改名、禁用和删除；商品新建/编辑用有效单位选择，禁用旧单位显示原值且允许保留。商品编辑允许调整分类，便于真实解除旧分类引用；仅在选择变更时发送categoryId，停用或隐藏的当前分类可保留但不能作为新选择。两端保持同一规则。
+ - [ ] 商户小程序商品页提供同样维护能力，分离组件，控件使用uni组件；H5标签可定位、点击聚焦，微信构建不依赖DOM处理业务。canManageBrand=false时只读展示，不提供假可用保存按钮。
+ - [ ] 真实页面验收：Web新建分类及单位，新增商品关联，商户H5刷新读到；改单位名两端一致；分类仅梧桐里可见、顾客另一店菜单无该分类；停用后顾客刷新消失且之前报价下单失败；恢复后可重新报价；引用删除被拒，空分类/未引用单位可删除，刷新保持。
+ - [ ] SQL核查分类映射/单位关系、审计、现有订单现金总额/库存不被本轮维护误改。低权限真实会话操作被拒。执行相关行为测试及Web/两小程序H5与微信构建，独立审查后更新REQ030/031四状态、README及progress。
+ 
+ 品牌商品模板、规格组合/属性、加料管理和导入仍单独计划；本计划不将这些空缺标记完成。引用调研见2026-10-20-restaurant-research.md中的yshop/litemall模型与事务分析，采用其领域拆分和库存模式，不未经检验搬运Java实现。
+diff --git a/docs/tasks/catalog-admin-report.md b/docs/tasks/catalog-admin-report.md
+index 3f133f9..27c21df 100644
+--- a/docs/tasks/catalog-admin-report.md
++++ b/docs/tasks/catalog-admin-report.md
+@@ -58,10 +58,31 @@
+ - test_catalog_regression_6f3f970bc5c6a59b，OID36220、owner OID10。
+ - test_catalog_regression_3b8445534680df17，OID36862、owner OID10。
+ 
+ 实现者未重置或清理 development/public/既有备份恢复库。Prisma generate 先通知协调器；仅在协调器停止其拥有的API后执行一次成功，之后未再generate。协调器自行执行development第6次迁移、构建和恢复API3000，并独立报告：health database=connected，与已验证备份恢复库的5订单、3现金合计8380、stock14/reserved0及CMS仍一致。该源库核对证据由协调器掌握，本报告不替代其独立验收。
+ 
+ ## 自检与待后续
+ 
+ 已逐项核对任务简报，职责分离为控制器、管理服务与公用目录规则，未扩展 MerchantController 为设置管理文件；产品PATCH的解析结果在事务内复制，不把可变派生值带入Serializable重试。迁移在既有5次迁移之后可应用；旧单位文本兼容，无金额或订单快照格式变更。引用保护保留数据库外键；版本、关系及审计处于同一事务。
+ 
+ 本报告是实现者自检与执行证据，独立任务审查由协调器随后执行；不能把自检代替独立审查。Task 2 将提供 Web/商户H5界面及真实UI验收，目前未对新增目录管理宣称UI已验证。上线、微信环境与生产验收仍未进行。原有 Prisma package.json#prisma 弃用提示来自固定6.19运行配置，未升级依赖。
++
++## Task 1 独立审查修复（2026-10-20）
++
++独立审查发现迁移保留测试的嵌套 `${schema}_migration` 夹具仍在 finally 无条件 DROP：CREATE 因名称碰撞失败时，会误删预先存在的 schema。外层 runner 已有创建成功标志及 namespace 身份核验，内层没有。现记录本轮 CREATE 成功状态、namespace OID 与 owner；仅成功创建且清理前身份一致时执行 DROP，身份变化时报错保留，并在独立 finally 关闭连接。
++
++新增真实 PostgreSQL/子进程回归：父测试创建自己的随机迁移 schema 与值为42的 sentinel，再让仅执行迁移保留测试的子进程碰撞它。断言子进程因 `already exists` 失败、原 namespace OID/owner 与 sentinel 均保留。父测试清理也核验所有权；原外层碰撞回归保持不变。
++
++另一个根因是可空的 Product.unitDefinition 没有显式 onDelete，Prisma 默认生成 SET NULL，与迁移006的 RESTRICT 不一致。仅在 schema.prisma 声明 `onDelete: Restrict`，未修改迁移006。新增只读 Prisma migrate diff 回归检查生成外键，防止此声明再次漂移；无需生成客户端。
++
++实际 TDD 证据：先新增上述两个测试，在未修复实现时执行 `node .superpowers/sdd/catalog-runner.cjs`，退出1，6 tests、4 passed、2 failed。碰撞断言实际 namespace 为 undefined，预期为 OID40046/owner10，证明确实发生误删；SQL断言实际生成 `ON DELETE SET NULL`，预期 RESTRICT。随后实施两项最小修复，再运行同一命令，退出0，6 passed、0 failed，涵盖模块guard、外层碰撞、内层碰撞、SQL声明、存量迁移与实际API。
++
++最终实际执行的检查：
++
++| 命令 | 结果 |
++| --- | --- |
++| `node .superpowers/sdd/catalog-runner.cjs` | 退出0；6 passed、0 failed；GREEN主schema为 test_catalog_e99805a221f8 |
++| `node apps/api/node_modules/prisma/build/index.js migrate diff --from-empty --to-schema-datamodel apps/api/prisma/schema.prisma --script`（输出通过 PowerShell Select-String 读取 Product_unitId_fkey） | 退出0；生成 `ON DELETE RESTRICT ON UPDATE CASCADE`；只读，未执行生成SQL |
++| `node apps/api/node_modules/typescript/bin/tsc -p apps/api/tsconfig.json --noEmit` | 退出0，无类型错误 |
++| `git diff --check` | 退出0，无空白错误；协调器 progress.md 仅提示既有CRLF转换 |
++
++清理结果：RED主schema test_catalog_f64b0d39f0af 与 GREEN主schema test_catalog_e99805a221f8 均由 runner 清理。GREEN 碰撞子进程失败后原schema/哨兵保留，再由创建它的父测试核验身份并删除；正常迁移夹具也清理完成。通过只读 pg 查询 `SELECT nspname FROM pg_namespace WHERE nspname LIKE 'test_catalog_%' ORDER BY nspname` 最终得到 `remainingCatalogSchemas: []`。仅使用本轮创建的隔离对象；未删除/重置 development、public 或保留恢复库，未停止 API3000、未执行 Prisma generate。按简报未重跑无关全套回归。实现者未发现遗留疑虑，仍需协调器独立审查确认。

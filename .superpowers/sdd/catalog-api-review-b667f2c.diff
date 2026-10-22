@@ -1,0 +1,1219 @@
+b667f2c feat(catalog): manage categories units and store visibility
+ .superpowers/sdd/catalog-regressions.mjs           |  36 ++++
+ .superpowers/sdd/catalog-runner.cjs                |  32 ++++
+ .../202610200006_catalog_settings/migration.sql    |  33 ++++
+ apps/api/prisma/schema.prisma                      |  29 +++
+ apps/api/prisma/seed.ts                            |  13 +-
+ apps/api/src/app.module.ts                         |   4 +-
+ apps/api/src/main.ts                               |   2 +-
+ .../modules/catalog/catalog-admin.controller.ts    |  14 ++
+ .../src/modules/catalog/catalog-admin.service.ts   |  95 ++++++++++
+ apps/api/src/modules/catalog/catalog-policy.ts     |  20 ++
+ apps/api/src/modules/catalog/catalog.service.ts    |   7 +-
+ .../src/modules/merchant/merchant.controller.ts    |  42 ++--
+ apps/api/src/modules/orders/orders.service.ts      |  17 +-
+ apps/api/tests/catalog-admin.test.ts               | 211 +++++++++++++++++++++
+ apps/api/tests/integration.test.ts                 |   2 +-
+ apps/api/tests/staff-access.test.ts                |   2 +-
+ docs/architecture/api-contract.md                  |  25 ++-
+ docs/tasks/catalog-admin-report.md                 |  67 +++++++
+ 18 files changed, 615 insertions(+), 36 deletions(-)
+diff --git a/.superpowers/sdd/catalog-regressions.mjs b/.superpowers/sdd/catalog-regressions.mjs
+new file mode 100644
+index 0000000..011c3ee
+--- /dev/null
++++ b/.superpowers/sdd/catalog-regressions.mjs
+@@ -0,0 +1,36 @@
++import {spawnSync} from 'node:child_process';
++import {randomBytes} from 'node:crypto';
++import {resolve} from 'node:path';
++import pg from 'pg';
++import {assertProjectDatabase} from '../../scripts/db.mjs';
++
++if(process.env.NODE_ENV==='production') throw new Error('Local catalog regressions cannot run in production');
++const name='test_catalog_regression_'+randomBytes(8).toString('hex');
++const root=resolve('.'), url=new URL('postgresql://restaurant_dev:restaurant_dev_local_only@127.0.0.1:55432/restaurant_dev');
++const control=new pg.Client({connectionString:url.href}); await control.connect();
++let created=false, identity;
++try {
++  await assertProjectDatabase(control);
++  if((await control.query('SELECT oid FROM pg_database WHERE datname=$1',[name])).rowCount) throw new Error('Database name collision; preserved');
++  await control.query(`CREATE DATABASE "${name}"`); created=true;
++  identity=(await control.query('SELECT oid,datdba FROM pg_database WHERE datname=$1',[name])).rows[0];
++  console.log('Created owned regression database',name,'identity',JSON.stringify(identity));
++  for(const [schema,file] of [['test_staff_access','staff-access.test.ts'],['test_bootstrap_owner','bootstrap-owner.test.ts'],['test_catalog_source','integration.test.ts']]) {
++    if(process.argv.length>2 && !process.argv.slice(2).includes(file)) continue;
++    const childUrl=new URL(url.href);childUrl.pathname='/'+name;childUrl.searchParams.set('schema',schema);
++    const env={...process.env,DATABASE_URL:childUrl.href,NODE_ENV:'test',DEV_AUTH_ENABLED:'true',DEV_SEED_ENABLED:file==='bootstrap-owner.test.ts'?'false':'true',TSX_TSCONFIG_PATH:resolve('apps/api/tsconfig.json')};delete env.NODE_TEST_CONTEXT;delete env.PUBLIC_BRAND_ID;
++    for(const args of [[resolve('apps/api/node_modules/prisma/build/index.js'),'migrate','deploy','--schema',resolve('apps/api/prisma/schema.prisma')],['--import','tsx','--test','tests/'+file]]) {
++      const result=spawnSync(process.execPath,args,{cwd:resolve('apps/api'),env,stdio:'inherit',windowsHide:true});if(result.status!==0) throw new Error(file+' exited '+result.status);
++    }
++  }
++} finally {
++  if(created) {
++    await assertProjectDatabase(control);
++    const current=(await control.query('SELECT oid,datdba FROM pg_database WHERE datname=$1',[name])).rows[0];
++    if(!identity || JSON.stringify(current)!==JSON.stringify(identity)) throw new Error('Database identity changed; preserved');
++    const connections=await control.query('SELECT pid FROM pg_stat_activity WHERE datname=$1',[name]);
++    if(connections.rowCount) throw new Error('Regression database still has connections; preserved');
++    await control.query(`DROP DATABASE "${name}"`);console.log('Removed owned regression database',name);
++  }
++  await control.end();
++}
+diff --git a/.superpowers/sdd/catalog-runner.cjs b/.superpowers/sdd/catalog-runner.cjs
+new file mode 100644
+index 0000000..0eafc0a
+--- /dev/null
++++ b/.superpowers/sdd/catalog-runner.cjs
+@@ -0,0 +1,32 @@
++const {spawnSync}=require('node:child_process');
++const {randomBytes}=require('node:crypto');
++const pg=require('pg');
++(async()=>{
++ if(process.env.NODE_ENV==='production') throw new Error('Local catalog tests cannot run in production');
++ const {assertProjectDatabase}=await import('../../scripts/db.mjs');
++ const schema='test_catalog_'+randomBytes(6).toString('hex');
++ const url=new URL('postgresql://restaurant_dev:restaurant_dev_local_only@127.0.0.1:55432/restaurant_dev'); url.searchParams.set('schema',schema);
++ const db=new pg.Client({connectionString:url.href});
++ let created=false, identity;
++ const env={...process.env,TSX_TSCONFIG_PATH:'apps/api/tsconfig.json',DATABASE_URL:url.href,NODE_ENV:'test',DEV_AUTH_ENABLED:'true',DEV_SEED_ENABLED:'true',PUBLIC_BRAND_ID:'experience-brand'};
++ delete env.NODE_TEST_CONTEXT;
++ const run=(args)=>{const r=spawnSync(process.execPath,args,{env,stdio:'inherit',windowsHide:true}); if(r.status!==0) throw new Error('Exit '+r.status);};
++ try {
++   await db.connect();await assertProjectDatabase(db);
++   await db.query(`CREATE SCHEMA "${schema}"`);created=true;
++   identity=(await db.query('SELECT oid,nspowner FROM pg_namespace WHERE nspname=$1',[schema])).rows[0];
++   run(['apps/api/node_modules/prisma/build/index.js','migrate','deploy','--schema','apps/api/prisma/schema.prisma']);
++   run(['--import','tsx','--test','apps/api/tests/catalog-admin.test.ts']);
++ }
++ catch(e){console.error(e.message);process.exitCode=1;}
++ finally {
++   try {
++     if(created) {
++       await assertProjectDatabase(db);
++       const current=(await db.query('SELECT oid,nspowner FROM pg_namespace WHERE nspname=$1',[schema])).rows[0];
++       if(!identity || JSON.stringify(current)!==JSON.stringify(identity)) throw new Error('Catalog schema identity changed; preserved');
++       await db.query(`DROP SCHEMA "${schema}" CASCADE`);
++     }
++   } finally {await db.end();}
++ }
++})();
+diff --git a/apps/api/prisma/migrations/202610200006_catalog_settings/migration.sql b/apps/api/prisma/migrations/202610200006_catalog_settings/migration.sql
+new file mode 100644
+index 0000000..a6a6008
+--- /dev/null
++++ b/apps/api/prisma/migrations/202610200006_catalog_settings/migration.sql
+@@ -0,0 +1,33 @@
++BEGIN;
++ALTER TABLE "Category" ADD COLUMN "enabled" BOOLEAN NOT NULL DEFAULT true,
++  ADD COLUMN "revision" INTEGER NOT NULL DEFAULT 0,
++  ADD COLUMN "allStores" BOOLEAN NOT NULL DEFAULT true;
++CREATE TABLE "CategoryStoreVisibility" (
++  "categoryId" TEXT NOT NULL,
++  "storeId" TEXT NOT NULL,
++  CONSTRAINT "CategoryStoreVisibility_pkey" PRIMARY KEY ("categoryId", "storeId"),
++  CONSTRAINT "CategoryStoreVisibility_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE CASCADE ON UPDATE CASCADE,
++  CONSTRAINT "CategoryStoreVisibility_storeId_fkey" FOREIGN KEY ("storeId") REFERENCES "Store"("id") ON DELETE CASCADE ON UPDATE CASCADE
++);
++CREATE INDEX "CategoryStoreVisibility_storeId_idx" ON "CategoryStoreVisibility"("storeId");
++CREATE TABLE "Unit" (
++  "id" TEXT NOT NULL PRIMARY KEY,
++  "brandId" TEXT NOT NULL,
++  "name" TEXT NOT NULL,
++  "enabled" BOOLEAN NOT NULL DEFAULT true,
++  "revision" INTEGER NOT NULL DEFAULT 0,
++  CONSTRAINT "Unit_brandId_fkey" FOREIGN KEY ("brandId") REFERENCES "Brand"("id") ON DELETE RESTRICT ON UPDATE CASCADE
++);
++CREATE UNIQUE INDEX "Unit_brandId_name_key" ON "Unit"("brandId", "name");
++ALTER TABLE "Product" ADD COLUMN "unitId" TEXT;
++-- Keep legacy text byte-for-byte. Distinct unit text belongs to the product store's brand.
++INSERT INTO "Unit" ("id", "brandId", "name")
++SELECT 'legacy_unit_' || md5(json_build_array(s."brandId", p."unit")::text), s."brandId", p."unit"
++FROM "Product" p JOIN "Store" s ON s."id" = p."storeId"
++GROUP BY s."brandId", p."unit";
++UPDATE "Product" p SET "unitId" = u."id"
++FROM "Store" s, "Unit" u
++WHERE s."id" = p."storeId" AND u."brandId" = s."brandId" AND u."name" = p."unit";
++CREATE INDEX "Product_unitId_idx" ON "Product"("unitId");
++ALTER TABLE "Product" ADD CONSTRAINT "Product_unitId_fkey" FOREIGN KEY ("unitId") REFERENCES "Unit"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
++COMMIT;
+diff --git a/apps/api/prisma/schema.prisma b/apps/api/prisma/schema.prisma
+index 01c7c3d..246f08a 100644
+--- a/apps/api/prisma/schema.prisma
++++ b/apps/api/prisma/schema.prisma
+@@ -7,20 +7,21 @@ datasource db {
+   url      = env("DATABASE_URL")
+ }
+ 
+ model Brand {
+   id           String     @id @default(cuid())
+   name         String
+   isExperience Boolean    @default(false)
+   stores       Store[]
+   users        User[]
+   categories   Category[]
++  units        Unit[]
+ }
+ 
+ model Store {
+   id             String        @id @default(cuid())
+   brandId        String
+   brand          Brand         @relation(fields: [brandId], references: [id])
+   name           String
+   address        String
+   phone          String
+   notice         String        @default("")
+@@ -30,20 +31,21 @@ model Store {
+   deliveryFeeFen Int           @default(500)
+   minOrderFen    Int           @default(0)
+   themeColor     String        @default("#247D61")
+   staff          StaffStore[]
+   products       Product[]
+   tables         DiningTable[]
+   quotes         Quote[]
+   orders         Order[]
+   page           Page?
+   audit          Audit[]
++  categoryVisibility CategoryStoreVisibility[]
+ }
+ 
+ model User {
+   id         String       @id @default(cuid())
+   brandId    String
+   brand      Brand        @relation(fields: [brandId], references: [id])
+   name       String
+   phone      String?
+   role       String
+   devAccount String?      @unique
+@@ -79,36 +81,63 @@ model Session {
+   expiresAt DateTime
+   createdAt DateTime @default(now())
+ }
+ 
+ model Category {
+   id       String    @id @default(cuid())
+   brandId  String
+   brand    Brand     @relation(fields: [brandId], references: [id])
+   name     String
+   sort     Int       @default(0)
++  enabled  Boolean   @default(true)
++  revision Int       @default(0)
++  allStores Boolean  @default(true)
++  visibility CategoryStoreVisibility[]
+   products Product[]
+ }
+ 
++model CategoryStoreVisibility {
++  categoryId String
++  storeId String
++  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
++  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
++  @@id([categoryId, storeId])
++  @@index([storeId])
++}
++
++model Unit {
++  id String @id @default(cuid())
++  brandId String
++  brand Brand @relation(fields: [brandId], references: [id])
++  name String
++  enabled Boolean @default(true)
++  revision Int @default(0)
++  products Product[]
++  @@unique([brandId, name])
++}
++
+ model Product {
+   id          String     @id @default(cuid())
+   storeId     String
+   store       Store      @relation(fields: [storeId], references: [id])
+   categoryId  String
+   category    Category   @relation(fields: [categoryId], references: [id])
+   name        String
+   description String     @default("")
+   imageUrl    String?
+   unit        String     @default("份")
++  unitId      String?
++  unitDefinition Unit? @relation(fields: [unitId], references: [id])
+   isAvailable Boolean    @default(true)
+   skus        Sku[]
+   modifiers   Modifier[]
++  @@index([unitId])
+ }
+ 
+ model Sku {
+   id        String  @id @default(cuid())
+   productId String
+   product   Product @relation(fields: [productId], references: [id])
+   name      String
+   priceFen  Int
+   stock     Int     @default(0)
+   reserved  Int     @default(0)
+diff --git a/apps/api/prisma/seed.ts b/apps/api/prisma/seed.ts
+index fce4075..773d50e 100644
+--- a/apps/api/prisma/seed.ts
++++ b/apps/api/prisma/seed.ts
+@@ -2,36 +2,47 @@ import { PrismaClient } from '@prisma/client';
+ import { assertEnvironment } from '../src/common/domain';
+ export async function seed(db: PrismaClient) {
+   assertEnvironment(process.env);
+   if (process.env.NODE_ENV === 'production' || process.env.DEV_SEED_ENABLED !== 'true') throw new Error('Experience seed requires DEV_SEED_ENABLED=true outside production');
+   const brand = await db.brand.upsert({where: {id: 'experience-brand'}, update: {}, create: {id: 'experience-brand', name: '梧桐里 · 体验品牌', isExperience: true}});
+   if (!brand.isExperience) throw new Error('Reserved experience brand id belongs to a non-experience brand; aborting seed');
+   const collisions = await db.store.count({where: {id: {in: ['experience-store-a','experience-store-b']}, brandId: {not: brand.id}}});
+   if (collisions) throw new Error('Reserved experience store id collision; refusing to alter another brand');
+   const categories = [{id: 'experience-cat-signature', name: '招牌鲜食', sort: 1}, {id: 'experience-cat-drinks', name: '清爽茶饮', sort: 2}];
+   for (const c of categories) await db.category.upsert({where: {id: c.id}, update: {}, create: {...c, brandId: brand.id}});
++  const units = new Map<string,string>();
++  for (const name of ['份','杯']) {
++    const id = `experience-unit-${name==='份'?'portion':'cup'}`;
++    const stable = await db.unit.findUnique({where:{id}});
++    if (stable && stable.brandId!==brand.id) throw new Error('Reserved experience unit id belongs to another brand');
++    // Migrated seed products may reference a renamed/disabled unit with a legacy ID.
++    // Reuse that identity before looking up the original display name.
++    const existing = await db.product.findFirst({where:{id:{in:name==='份'?['experience-a-chicken','experience-b-chicken']:['experience-a-lemon','experience-b-lemon']},store:{brandId:brand.id},unitId:{not:null}},include:{unitDefinition:true},orderBy:{id:'asc'}});
++    const unit = stable || existing?.unitDefinition || await db.unit.upsert({where:{brandId_name:{brandId:brand.id,name}},update:{},create:{id,brandId:brand.id,name}});
++    units.set(name,unit.id);
++  }
+   const products = [
+     {key: 'chicken', name: '香煎鸡腿饭', description: '现煎鸡腿配时蔬、溏心蛋与香软米饭', price: 2800, category: categories[0].id, unit: '份', options: [{name: '标准份', price: 2800}, {name: '加量份', price: 3400}]},
+     {key: 'beef', name: '番茄炖牛腩', description: '慢炖牛腩与新鲜番茄，浓郁家常风味', price: 3800, category: categories[0].id, unit: '份'},
+     {key: 'vegetable', name: '田园时蔬碗', description: '当季时蔬搭配杂粮，轻盈清爽', price: 2200, category: categories[0].id, unit: '份'},
+     {key: 'lemon', name: '手打柠檬茶', description: '鲜切柠檬与清香茶底，现点现做', price: 1600, category: categories[1].id, unit: '杯'},
+     {key: 'plum', name: '桂花酸梅汤', description: '乌梅慢煮，桂花飘香', price: 1200, category: categories[1].id, unit: '杯'}
+   ];
+   for (const [index, suffix] of ['a','b'].entries()) {
+     const storeId = `experience-store-${suffix}`;
+     await db.store.upsert({where: {id: storeId}, update: {}, create: {id: storeId, brandId: brand.id, name: index === 0 ? '体验门店 · 梧桐里' : '体验门店 · 湖滨', address: index === 0 ? '体验地址：梧桐路88号' : '体验地址：湖滨路16号', phone: '0571-00000000', notice: '仅供本地体验；现金由员工确认，微信支付与配送服务尚未接入。', deliveryFeeFen: 500, minOrderFen: 0, serviceModes: ['DINE_IN','PICKUP']}});
+     const page = {notice: '体验门店 · 数据仅供本地演示', bannerTitle: '把一餐，过得认真', bannerSubtitle: '现点现做 · 温暖日常', primaryColor: '#247D61'};
+     await db.page.upsert({where: {storeId}, update: {}, create: {storeId, draft: page, published: page}});
+     for (let n = 1; n <= 6; n++) await db.diningTable.upsert({where: {code: `EXPERIENCE-${suffix.toUpperCase()}-${n}`}, update: {}, create: {id: `experience-table-${suffix}-${n}`, storeId, name: `${String(n).padStart(2,'0')}号桌`, capacity: n < 4 ? 2 : 4, code: `EXPERIENCE-${suffix.toUpperCase()}-${n}`}});
+     for (const p of products) {
+       const productId = `experience-${suffix}-${p.key}`;
+-      await db.product.upsert({where: {id: productId}, update: {}, create: {id: productId, storeId, categoryId: p.category, name: p.name, description: p.description, unit: p.unit}});
++      await db.product.upsert({where: {id: productId}, update: {}, create: {id: productId, storeId, categoryId: p.category, name: p.name, description: p.description, unit: p.unit, unitId:units.get(p.unit)}});
+       const options = p.options || [{name: '标准份', price: p.price}];
+       for (const [i, option] of options.entries()) await db.sku.upsert({where: {id: `${productId}-sku-${i}`}, update: {}, create: {id: `${productId}-sku-${i}`, productId, name: option.name, priceFen: option.price, stock: 40}});
+       if (p.category === categories[0].id) await db.modifier.upsert({where: {id: `${productId}-egg`}, update: {}, create: {id: `${productId}-egg`, productId, name: '加一份溏心蛋', priceFen: 300, stock: 40}});
+     }
+   }
+   for (const [account, name, role] of [['customer','体验顾客','CUSTOMER'],['owner','体验店主','OWNER'],['clerk-a','梧桐里店员','CLERK'],['clerk-b','湖滨店员','CLERK']]) {
+     const user = await db.user.upsert({where: {devAccount: account}, update: {}, create: {id: `experience-user-${account}`, brandId: brand.id, devAccount: account, name, role, phone: account === 'customer' ? '13800000000' : null}});
+     if (user.brandId !== brand.id || user.role !== role) throw new Error('Experience identity collision');
+     for (const suffix of role === 'OWNER' ? ['a','b'] : account === 'clerk-a' ? ['a'] : account === 'clerk-b' ? ['b'] : []) {
+       const storeId = `experience-store-${suffix}`;
+diff --git a/apps/api/src/app.module.ts b/apps/api/src/app.module.ts
+index f2b7984..33d42fc 100644
+--- a/apps/api/src/app.module.ts
++++ b/apps/api/src/app.module.ts
+@@ -5,12 +5,14 @@ import { AuthService } from './modules/auth/auth.service';
+ import { AuthController } from './modules/auth/auth.controller';
+ import { CatalogService } from './modules/catalog/catalog.service';
+ import { StoresController } from './modules/stores/stores.controller';
+ import { OrdersService } from './modules/orders/orders.service';
+ import { OrderExpiryService } from './modules/orders/order-expiry.service';
+ import { OrdersController } from './modules/orders/orders.controller';
+ import { MerchantController } from './modules/merchant/merchant.controller';
+ import { CmsController } from './modules/cms/cms.controller';
+ import { StaffController } from './modules/staff/staff.controller';
+ import { StaffService } from './modules/staff/staff.service';
+-@Module({controllers: [AuthController, StoresController, OrdersController, MerchantController, CmsController, StaffController], providers: [Db, PublicBrand, AuthService, CatalogService, OrdersService, OrderExpiryService, StaffService]})
++import { CatalogAdminController } from './modules/catalog/catalog-admin.controller';
++import { CatalogAdminService } from './modules/catalog/catalog-admin.service';
++@Module({controllers: [AuthController, StoresController, OrdersController, MerchantController, CmsController, StaffController, CatalogAdminController], providers: [Db, PublicBrand, AuthService, CatalogService, OrdersService, OrderExpiryService, StaffService, CatalogAdminService]})
+ export class AppModule {}
+diff --git a/apps/api/src/main.ts b/apps/api/src/main.ts
+index f5afcfc..1f19dc6 100644
+--- a/apps/api/src/main.ts
++++ b/apps/api/src/main.ts
+@@ -2,14 +2,14 @@ import 'reflect-metadata';
+ import { NestFactory } from '@nestjs/core';
+ import { AppModule } from './app.module';
+ import { assertEnvironment } from './common/domain';
+ import { Envelope, Errors } from './common/http';
+ export async function createApp() {
+   assertEnvironment(process.env);
+   if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required; production never uses a development fallback');
+   const app = await NestFactory.create(AppModule, {logger: ['error', 'warn']});
+   app.setGlobalPrefix('api/v1');
+   app.useGlobalInterceptors(new Envelope()); app.useGlobalFilters(new Errors());
+-  app.enableCors({origin: process.env.NODE_ENV === 'production' ? (process.env.CORS_ORIGINS || '').split(',').filter(Boolean) : true, allowedHeaders: ['Content-Type','Authorization','Idempotency-Key','X-Request-Id'], methods: ['GET','POST','PATCH','PUT','OPTIONS']});
++  app.enableCors({origin: process.env.NODE_ENV === 'production' ? (process.env.CORS_ORIGINS || '').split(',').filter(Boolean) : true, allowedHeaders: ['Content-Type','Authorization','Idempotency-Key','X-Request-Id'], methods: ['GET','POST','PATCH','PUT','DELETE','OPTIONS']});
+   app.enableShutdownHooks(); return app;
+ }
+ if (require.main === module) createApp().then(app => app.listen(Number(process.env.PORT || 3000), process.env.HOST || '127.0.0.1')).catch(error => { console.error(error.message); process.exitCode = 1; });
+diff --git a/apps/api/src/modules/catalog/catalog-admin.controller.ts b/apps/api/src/modules/catalog/catalog-admin.controller.ts
+new file mode 100644
+index 0000000..678c074
+--- /dev/null
++++ b/apps/api/src/modules/catalog/catalog-admin.controller.ts
+@@ -0,0 +1,14 @@
++import {Body, Controller, Delete, Get, Inject, Param, Patch, Post, Query, Req} from '@nestjs/common';
++import {CatalogAdminService} from './catalog-admin.service';
++
++@Controller('merchant')
++export class CatalogAdminController {
++  constructor(@Inject(CatalogAdminService) private catalog: CatalogAdminService) {}
++  @Get('catalog-settings') settings(@Req() req:any,@Query('storeId') storeId:string) {return this.catalog.settings(req,storeId);}
++  @Post('categories') createCategory(@Req() req:any,@Body() body:unknown) {return this.catalog.create(req,'category',body);}
++  @Patch('categories/:id') editCategory(@Req() req:any,@Param('id') id:string,@Body() body:unknown) {return this.catalog.edit(req,'category',id,body);}
++  @Delete('categories/:id') deleteCategory(@Req() req:any,@Param('id') id:string,@Body() body:unknown) {return this.catalog.remove(req,'category',id,body);}
++  @Post('units') createUnit(@Req() req:any,@Body() body:unknown) {return this.catalog.create(req,'unit',body);}
++  @Patch('units/:id') editUnit(@Req() req:any,@Param('id') id:string,@Body() body:unknown) {return this.catalog.edit(req,'unit',id,body);}
++  @Delete('units/:id') deleteUnit(@Req() req:any,@Param('id') id:string,@Body() body:unknown) {return this.catalog.remove(req,'unit',id,body);}
++}
+diff --git a/apps/api/src/modules/catalog/catalog-admin.service.ts b/apps/api/src/modules/catalog/catalog-admin.service.ts
+new file mode 100644
+index 0000000..b14ecce
+--- /dev/null
++++ b/apps/api/src/modules/catalog/catalog-admin.service.ts
+@@ -0,0 +1,95 @@
++import {Inject, Injectable} from '@nestjs/common';
++import {Prisma} from '@prisma/client';
++import {Db} from '../../common/db';
++import {fail, object, str} from '../../common/domain';
++import {AuthService, Identity} from '../auth/auth.service';
++
++type Kind = 'category' | 'unit';
++const json = (value:unknown):Prisma.InputJsonValue => JSON.parse(JSON.stringify(value));
++const revision = (value:unknown) => {
++  if (!Number.isSafeInteger(value) || (value as number)<0 || (value as number)>2_000_000_000) fail('VALIDATION_ERROR','版本格式不正确');
++  return value as number;
++};
++@Injectable()
++export class CatalogAdminService {
++  constructor(@Inject(Db) private db:Db,@Inject(AuthService) private auth:AuthService) {}
++  private name(value:unknown,kind:Kind) {return str(typeof value==='string'?value.trim():value,kind==='category'?'分类名称':'单位名称',kind==='category'?80:20);}
++  private view(row:any,actor:Identity,canManageBrand:boolean,kind:Kind) {
++    const common={id:row.id,name:row.name,enabled:row.enabled,revision:row.revision,productCount:row._count.products};
++    return kind==='unit' ? common : {...common,sort:row.sort,visibleStoreIds:row.allStores && canManageBrand ? null : (row.allStores?actor.storeIds:row.visibility.map((v:any)=>v.storeId).filter((id:string)=>actor.storeIds.includes(id))).sort()};
++  }
++  private async context(tx:Prisma.TransactionClient,req:any,storeId:string,write=false) {
++    const actor=await this.auth.staff(req,storeId,write,tx);
++    const stores=await tx.store.findMany({where:{brandId:actor.brandId},select:{id:true,name:true},orderBy:{id:'asc'}});
++    const canManageBrand=actor.role==='OWNER' && stores.every(s=>actor.storeIds.includes(s.id));
++    if(write && !canManageBrand) fail('FORBIDDEN','修改品牌分类和单位需要全部门店的店主授权',403);
++    return {actor,stores,canManageBrand};
++  }
++  async settings(req:any,storeValue:unknown) {
++    const storeId=str(storeValue,'门店');
++    return this.db.atomic(async tx=>{
++      const {actor,stores,canManageBrand}=await this.context(tx,req,storeId);
++      const categories=await tx.category.findMany({where:{brandId:actor.brandId},include:{visibility:true,_count:{select:{products:true}}},orderBy:[{sort:'asc'},{id:'asc'}]});
++      const units=await tx.unit.findMany({where:{brandId:actor.brandId},include:{_count:{select:{products:true}}},orderBy:{id:'asc'}});
++      return {canManageBrand,categories:categories.map(c=>this.view(c,actor,canManageBrand,'category')),units:units.map(u=>this.view(u,actor,canManageBrand,'unit')),stores:stores.filter(s=>actor.storeIds.includes(s.id))};
++    });
++  }
++  private async target(tx:Prisma.TransactionClient,kind:Kind,id:string,brandId:string) {
++    const row=kind==='category'
++      ? await tx.category.findUnique({where:{id},include:{visibility:true,_count:{select:{products:true}}}})
++      : await tx.unit.findUnique({where:{id},include:{_count:{select:{products:true}}}});
++    if(!row || row.brandId!==brandId) fail('FORBIDDEN','无此品牌配置管理权限',403);
++    return row;
++  }
++  private async audit(tx:Prisma.TransactionClient,storeId:string,actor:Identity,kind:Kind,action:string,id:string,before?:unknown,after?:unknown) {
++    await tx.audit.create({data:{storeId,actorId:actor.id,action:`${kind.toUpperCase()}_${action}`,entityId:id,...(before?{before:json(before)}:{}),...(after?{after:json(after)}:{})}});
++  }
++  async create(req:any,kind:Kind,body:unknown) {
++    const b=object(body,['storeId','name']),storeId=str(b.storeId,'门店'),name=this.name(b.name,kind);
++    return this.db.atomic(async tx=>{
++      const {actor}=await this.context(tx,req,storeId,true);
++      if(kind==='unit' && await tx.unit.findUnique({where:{brandId_name:{brandId:actor.brandId,name}}})) fail('NAME_CONFLICT','该单位名称已存在',409);
++      const row=kind==='category'
++        ? await tx.category.create({data:{brandId:actor.brandId,name},include:{visibility:true,_count:{select:{products:true}}}})
++        : await tx.unit.create({data:{brandId:actor.brandId,name},include:{_count:{select:{products:true}}}});
++      const after=this.view(row,actor,true,kind); await this.audit(tx,storeId,actor,kind,'CREATE',row.id,undefined,after); return after;
++    });
++  }
++  async edit(req:any,kind:Kind,id:string,body:unknown) {
++    const fields=kind==='category'?['name','sort','enabled','visibleStoreIds']:['name','enabled'];
++    const b=object(body,['storeId','expectedRevision',...fields]),storeId=str(b.storeId,'门店'),expectedRevision=revision(b.expectedRevision);
++    if(!fields.some(k=>b[k]!==undefined)) fail('VALIDATION_ERROR','请提供要修改的内容');
++    const data:any={revision:{increment:1}};
++    if(b.name!==undefined) data.name=this.name(b.name,kind);
++    if(b.enabled!==undefined) {if(typeof b.enabled!=='boolean') fail('VALIDATION_ERROR','启用状态格式不正确'); data.enabled=b.enabled;}
++    if(b.sort!==undefined) {if(!Number.isInteger(b.sort)||b.sort<0||b.sort>100000) fail('VALIDATION_ERROR','排序需为0至100000的整数'); data.sort=b.sort;}
++    let ids:string[]|undefined;
++    if(b.visibleStoreIds!==undefined) {
++      if(b.visibleStoreIds!==null && (!Array.isArray(b.visibleStoreIds)||b.visibleStoreIds.length>100)) fail('VALIDATION_ERROR','可见门店格式不正确，最多100家');
++      ids=b.visibleStoreIds===null?[]:[...new Set<string>(b.visibleStoreIds.map((id:unknown)=>str(id,'门店')))]; data.allStores=b.visibleStoreIds===null;
++    }
++    return this.db.atomic(async tx=>{
++      const {actor,stores}=await this.context(tx,req,storeId,true);
++      const before=await this.target(tx,kind,id,actor.brandId);
++      if(before.revision!==expectedRevision) fail('STATE_CONFLICT','内容已被修改，请刷新后重试',409);
++      if(ids?.some(id=>!stores.some(s=>s.id===id))) fail('FORBIDDEN','可见门店必须属于当前品牌',403);
++      if(kind==='unit' && data.name) {const conflict=await tx.unit.findUnique({where:{brandId_name:{brandId:actor.brandId,name:data.name}}}); if(conflict && conflict.id!==id) fail('NAME_CONFLICT','该单位名称已存在',409);}
++      const result=kind==='category'?await tx.category.updateMany({where:{id,brandId:actor.brandId,revision:expectedRevision},data}):await tx.unit.updateMany({where:{id,brandId:actor.brandId,revision:expectedRevision},data});
++      if(!result.count) fail('STATE_CONFLICT','内容已被修改，请刷新后重试',409);
++      if(ids!==undefined) {await tx.categoryStoreVisibility.deleteMany({where:{categoryId:id}}); if(ids.length) await tx.categoryStoreVisibility.createMany({data:ids.map(storeId=>({categoryId:id,storeId}))});}
++      const after=this.view(await this.target(tx,kind,id,actor.brandId),actor,true,kind);
++      await this.audit(tx,storeId,actor,kind,'UPDATE',id,this.view(before,actor,true,kind),after); return after;
++    });
++  }
++  async remove(req:any,kind:Kind,id:string,body:unknown) {
++    const b=object(body,['storeId','expectedRevision']),storeId=str(b.storeId,'门店'),expectedRevision=revision(b.expectedRevision);
++    return this.db.atomic(async tx=>{
++      const {actor}=await this.context(tx,req,storeId,true),before=await this.target(tx,kind,id,actor.brandId);
++      if(before.revision!==expectedRevision) fail('STATE_CONFLICT','内容已被修改，请刷新后重试',409);
++      if(before._count.products) fail('REFERENCE_CONFLICT','已有商品使用此配置，请先调整商品或停用',409);
++      const removed=kind==='category'?await tx.category.deleteMany({where:{id,brandId:actor.brandId,revision:expectedRevision}}):await tx.unit.deleteMany({where:{id,brandId:actor.brandId,revision:expectedRevision}});
++      if(!removed.count) fail('STATE_CONFLICT','内容已被修改，请刷新后重试',409);
++      await this.audit(tx,storeId,actor,kind,'DELETE',id,this.view(before,actor,true,kind)); return {id,deleted:true};
++    });
++  }
++}
+diff --git a/apps/api/src/modules/catalog/catalog-policy.ts b/apps/api/src/modules/catalog/catalog-policy.ts
+new file mode 100644
+index 0000000..c1d96b5
+--- /dev/null
++++ b/apps/api/src/modules/catalog/catalog-policy.ts
+@@ -0,0 +1,20 @@
++import {Prisma} from '@prisma/client';
++import {fail, str} from '../../common/domain';
++
++export const visibleCategory = (storeId: string): Prisma.CategoryWhereInput => ({enabled:true, OR:[{allStores:true},{visibility:{some:{storeId}}}]});
++export async function assertCategory(tx: Prisma.TransactionClient, categoryId: string, brandId: string, storeId: string) {
++  const category = await tx.category.findUnique({where:{id:categoryId}, include:{visibility:true}});
++  if (!category || category.brandId !== brandId) fail('FORBIDDEN','分类不属于此品牌',403);
++  if (!category.enabled || (!category.allStores && !category.visibility.some(v=>v.storeId===storeId))) fail('CATALOG_CHANGED','商品分类已停用或在本店隐藏，请刷新菜单后重试',409);
++  return category;
++}
++export async function resolveUnit(tx: Prisma.TransactionClient, brandId: string, body: Record<string, any>) {
++  const unit = body.unitId !== undefined
++    ? await tx.unit.findUnique({where:{id:str(body.unitId,'单位',200)}})
++    : await tx.unit.findUnique({where:{brandId_name:{brandId,name:str(typeof body.unit==='string'?body.unit.trim():body.unit,'单位',20)}}});
++  if (!unit) fail('VALIDATION_ERROR','请选择已有的有效单位');
++  if (unit.brandId !== brandId) fail('FORBIDDEN','单位不属于此品牌',403);
++  if (!unit.enabled) fail('STATE_CONFLICT','该单位已停用，请选择其他单位',409);
++  if (body.unitId !== undefined && body.unit !== undefined && str(body.unit,'单位',20).trim() !== unit.name) fail('VALIDATION_ERROR','单位名称与所选单位不一致');
++  return {unitId:unit.id,unit:unit.name};
++}
+diff --git a/apps/api/src/modules/catalog/catalog.service.ts b/apps/api/src/modules/catalog/catalog.service.ts
+index 1e314d5..d873612 100644
+--- a/apps/api/src/modules/catalog/catalog.service.ts
++++ b/apps/api/src/modules/catalog/catalog.service.ts
+@@ -1,19 +1,20 @@
+ import { Inject, Injectable } from '@nestjs/common';
+ import { Db } from '../../common/db';
+ import { fail } from '../../common/domain';
+ import { PublicBrand } from '../../common/public-brand';
+-export const productView = (p: any) => ({id: p.id, categoryId: p.categoryId, name: p.name, description: p.description, imageUrl: p.imageUrl, unit: p.unit, isAvailable: p.isAvailable, skus: p.skus.map((s: any) => ({id: s.id, name: s.name, priceFen: s.priceFen, available: s.stock})), modifiers: p.modifiers.map((m: any) => ({id: m.id, name: m.name, priceFen: m.priceFen, available: m.stock}))});
++import { visibleCategory } from './catalog-policy';
++export const productView = (p: any) => ({id: p.id, categoryId: p.categoryId, name: p.name, description: p.description, imageUrl: p.imageUrl, unit: p.unitDefinition?.name ?? p.unit, unitId: p.unitId ?? null, isAvailable: p.isAvailable, skus: p.skus.map((s: any) => ({id: s.id, name: s.name, priceFen: s.priceFen, available: s.stock})), modifiers: p.modifiers.map((m: any) => ({id: m.id, name: m.name, priceFen: m.priceFen, available: m.stock}))});
+ @Injectable()
+ export class CatalogService {
+   constructor(@Inject(Db) private db: Db, @Inject(PublicBrand) private publicBrand: PublicBrand) {}
+   async get(storeId: string, employee = false) {
+     if (!employee) await this.publicBrand.assertStore(storeId);
+     const store = await this.db.store.findUnique({where: {id: storeId}});
+     if (!store) fail('NOT_FOUND', '门店不存在', 404);
+     const [categories, products] = await Promise.all([
+-      this.db.category.findMany({where: {brandId: store.brandId}, orderBy: {sort: 'asc'}, select: {id: true, name: true, sort: true}}),
+-      this.db.product.findMany({where: {storeId, ...(employee ? {} : {isAvailable: true})}, include: {skus: true, modifiers: true}, orderBy: {id: 'asc'}})
++      this.db.category.findMany({where: {brandId: store.brandId, ...(employee ? {} : visibleCategory(storeId))}, orderBy: [{sort: 'asc'}, {id: 'asc'}], select: {id: true, name: true, sort: true}}),
++      this.db.product.findMany({where: {storeId, ...(employee ? {} : {isAvailable: true, category: {brandId: store.brandId, ...visibleCategory(storeId)}})}, include: {skus: true, modifiers: true, unitDefinition: true}, orderBy: {id: 'asc'}})
+     ]);
+     return {categories, products: products.map(productView)};
+   }
+ }
+diff --git a/apps/api/src/modules/merchant/merchant.controller.ts b/apps/api/src/modules/merchant/merchant.controller.ts
+index eb7de1b..82c0a2e 100644
+--- a/apps/api/src/modules/merchant/merchant.controller.ts
++++ b/apps/api/src/modules/merchant/merchant.controller.ts
+@@ -1,16 +1,17 @@
+ import { Body, Controller, Get, Inject, Param, Patch, Post, Query, Req } from '@nestjs/common';
+ import { Prisma } from '@prisma/client';
+ import { Db } from '../../common/db';
+ import { fail, money, object, str, maskPhone } from '../../common/domain';
+ import { AuthService } from '../auth/auth.service';
+ import { CatalogService } from '../catalog/catalog.service';
++import { assertCategory, resolveUnit } from '../catalog/catalog-policy';
+ const safeJson = (v: any): Prisma.InputJsonValue => JSON.parse(JSON.stringify(v));
+ const image = (v: unknown) => {
+   if (v === null) return null;
+   const text = str(v, 'imageUrl', 2000); let url: URL;
+   try { url = new URL(text); } catch { return fail('VALIDATION_ERROR', '图片地址无效'); }
+   if (!['http:', 'https:'].includes(url.protocol)) fail('VALIDATION_ERROR', '图片需使用http(s)地址');
+   return text;
+ };
+ @Controller('merchant')
+ export class MerchantController {
+@@ -41,62 +42,63 @@ export class MerchantController {
+     if (b.themeColor !== undefined && !/^#[0-9a-f]{6}$/i.test(b.themeColor)) fail('VALIDATION_ERROR', '颜色无效');
+     return this.db.atomic(async tx => {
+       const before = await tx.store.findUniqueOrThrow({where: {id: storeId}});
+       const after = await tx.store.update({where: {id: storeId}, data: b});
+       await tx.audit.create({data: {storeId, actorId: user.id, action: 'STORE_UPDATE', entityId: storeId, before: safeJson(before), after: safeJson(after)}});
+       return after;
+     });
+   }
+   @Get('products') async products(@Req() req: any, @Query('storeId') storeId: string) { await this.auth.staff(req, storeId); return this.catalog.get(storeId, true); }
+   @Post('products') async createProduct(@Req() req: any, @Body() body: unknown) {
+-    const b = object(body, ['storeId','categoryId','name','description','imageUrl','unit','skus']);
+-    const user = await this.auth.staff(req, b.storeId, true);
+-    const category = await this.db.category.findUnique({where: {id: str(b.categoryId, 'categoryId')}});
+-    if (!category || category.brandId !== user.brandId) fail('FORBIDDEN', '分类不属于此品牌', 403);
++    const b = object(body, ['storeId','categoryId','name','description','imageUrl','unit','unitId','skus']);
++    const storeId = str(b.storeId, '门店');
++    await this.auth.staff(req, storeId, true);
++    const categoryId = str(b.categoryId, '分类');
+     if (!Array.isArray(b.skus) || !b.skus.length || b.skus.length > 20) fail('VALIDATION_ERROR', '需提供1至20种规格');
+     const skus = b.skus.map((v: unknown) => { const s = object(v, ['name','priceFen','stock']); return {name: str(s.name, '规格名称', 80), priceFen: money(s.priceFen), stock: money(s.stock)}; });
+-    const data = {storeId: b.storeId, categoryId: b.categoryId, name: str(b.name, '商品名称', 100), description: str(b.description, '描述', 1000, true), unit: str(b.unit, '单位', 20), imageUrl: b.imageUrl === undefined ? null : image(b.imageUrl), skus: {create: skus}};
++    const data = {storeId, categoryId, name: str(b.name, '商品名称', 100), description: str(b.description, '描述', 1000, true), imageUrl: b.imageUrl === undefined ? null : image(b.imageUrl), skus: {create: skus}};
+     return this.db.atomic(async tx => {
+-      const p = await tx.product.create({data, include: {skus: true, modifiers: true}});
+-      await tx.audit.create({data: {storeId: b.storeId, actorId: user.id, action: 'PRODUCT_CREATE', entityId: p.id, after: safeJson(p)}}); return p;
++      const user = await this.auth.staff(req, storeId, true, tx);
++      await assertCategory(tx, categoryId, user.brandId, storeId);
++      const unit = await resolveUnit(tx, user.brandId, b);
++      const p = await tx.product.create({data: {...data, ...unit}, include: {skus: true, modifiers: true, unitDefinition: true}});
++      await tx.audit.create({data: {storeId: b.storeId, actorId: user.id, action: 'PRODUCT_CREATE', entityId: p.id, after: safeJson(p)}}); return {...p, unit:p.unitDefinition?.name ?? p.unit};
+     });
+   }
+   @Patch('products/:productId') async editProduct(@Req() req: any, @Param('productId') id: string, @Body() body: unknown) {
+-    const b = object(body, ['storeId','name','description','isAvailable','imageUrl','unit']);
+-    const user = await this.auth.staff(req, b.storeId, true);
++    const b = object(body, ['storeId','categoryId','name','description','isAvailable','imageUrl','unit','unitId']);
++    await this.auth.staff(req, b.storeId, true);
+     const {storeId, ...data} = b;
+-    for (const k of ['name','description','unit']) if (data[k] !== undefined) str(data[k], k, k === 'description' ? 1000 : 100, k === 'description');
++    for (const k of ['name','description']) if (data[k] !== undefined) str(data[k], k, k === 'description' ? 1000 : 100, k === 'description');
+     if (data.imageUrl !== undefined) data.imageUrl = image(data.imageUrl);
+     if (data.isAvailable !== undefined && typeof data.isAvailable !== 'boolean') fail('VALIDATION_ERROR', 'isAvailable需为布尔值');
+     return this.db.atomic(async tx => {
++      const user = await this.auth.staff(req, storeId, true, tx);
+       const before = await tx.product.findFirst({where: {id, storeId}}); if (!before) fail('FORBIDDEN', '商品不属于此门店', 403);
+-      const after = await tx.product.update({where: {id}, data});
+-      await tx.audit.create({data: {storeId, actorId: user.id, action: 'PRODUCT_UPDATE', entityId: id, before: safeJson(before), after: safeJson(after)}}); return after;
++      if (data.categoryId !== undefined) await assertCategory(tx, str(data.categoryId, '分类'), user.brandId, storeId);
++      const patch = {...data};
++      if (data.unitId !== undefined || data.unit !== undefined) Object.assign(patch, await resolveUnit(tx, user.brandId, data));
++      const after = await tx.product.update({where: {id}, data:patch, include: {unitDefinition: true}});
++      await tx.audit.create({data: {storeId, actorId: user.id, action: 'PRODUCT_UPDATE', entityId: id, before: safeJson(before), after: safeJson(after)}}); return {...after, unit:after.unitDefinition?.name ?? after.unit};
+     });
+   }
+   @Patch('skus/:skuId') async editSku(@Req() req: any, @Param('skuId') id: string, @Body() body: unknown) {
+-    const b = object(body, ['storeId','priceFen','stock']); const user = await this.auth.staff(req, b.storeId, true);
++    const b = object(body, ['storeId','priceFen','stock']); await this.auth.staff(req, b.storeId, true);
+     const {storeId, ...data} = b; for (const k of Object.keys(data)) money(data[k]);
+     return this.db.atomic(async tx => {
++      const user = await this.auth.staff(req, storeId, true, tx);
+       const before = await tx.sku.findFirst({where: {id, product: {storeId}}}); if (!before) fail('FORBIDDEN', '规格不属于此门店', 403);
+       if (data.stock !== undefined && data.stock + before.reserved > 2_000_000_000) fail('VALIDATION_ERROR', '可售库存与预占总量过大');
+       const after = await tx.sku.update({where: {id}, data});
+       await tx.audit.create({data: {storeId, actorId: user.id, action: 'SKU_UPDATE', entityId: id, before: safeJson(before), after: safeJson(after)}}); return after;
+     });
+   }
+-  @Post('categories') async category(@Req() req: any, @Body() body: unknown) {
+-    const b = object(body, ['storeId','name']); const user = await this.auth.staff(req, b.storeId, true);
+-    return this.db.atomic(async tx => {
+-      const c = await tx.category.create({data: {brandId: user.brandId, name: str(b.name, '分类名称', 80)}});
+-      await tx.audit.create({data: {storeId: b.storeId, actorId: user.id, action: 'CATEGORY_CREATE', entityId: c.id, after: safeJson(c)}}); return c;
+-    });
+-  }
+   @Get('members') async members(@Req() req: any, @Query('storeId') storeId: string, @Query('search') search = '') {
+     const user = await this.auth.staff(req, storeId); str(search, 'search', 100, true);
+     const members = await this.db.user.findMany({where: {brandId: user.brandId, role: 'CUSTOMER', ...(search ? {OR: [{name: {contains: search, mode: 'insensitive'}}, {phone: {contains: search}}]} : {})}, take: 100, select: {id: true, name: true, phone: true, levelName: true, balanceFen: true, points: true}});
+     return members.map(m => ({...m, phone: maskPhone(m.phone)}));
+   }
+   @Get('audit') async audit(@Req() req: any, @Query('storeId') storeId: string, @Query('page') pageValue = '1') {
+     await this.auth.staff(req, storeId, true); const page = Number(pageValue);
+     if (!Number.isInteger(page) || page < 1 || page > 10000) fail('VALIDATION_ERROR', '分页无效');
+     const [items, total] = await this.db.$transaction([this.db.audit.findMany({where: {storeId}, orderBy: {createdAt: 'desc'}, take: 20, skip: (page - 1) * 20}), this.db.audit.count({where: {storeId}})]);
+     return {items, total, page, pageSize: 20};
+diff --git a/apps/api/src/modules/orders/orders.service.ts b/apps/api/src/modules/orders/orders.service.ts
+index 06e81cc..bd5de4c 100644
+--- a/apps/api/src/modules/orders/orders.service.ts
++++ b/apps/api/src/modules/orders/orders.service.ts
+@@ -1,16 +1,17 @@
+ import { Inject, Injectable } from '@nestjs/common';
+ import { createHash, randomBytes } from 'node:crypto';
+ import { Prisma } from '@prisma/client';
+ import { Db } from '../../common/db';
+ import { assertPositiveQuantity, assertStoreAccess, fail, money, object, str, canTransition, transitions } from '../../common/domain';
+ import { AuthService, Identity } from '../auth/auth.service';
++import { assertCategory } from '../catalog/catalog-policy';
+ const include = {events: {orderBy: {createdAt: 'asc' as const}}, store: {select: {brandId: true}}, cash: {select: {amountFen: true, tenderedFen: true, changeFen: true}}};
+ function inventoryCounts(lines: any[]) {
+   const skus = new Map<string, number>(), modifiers = new Map<string, number>();
+   for (const line of lines) {
+     skus.set(line.skuId, (skus.get(line.skuId) || 0) + line.quantity);
+     for (const m of line.modifiers) modifiers.set(m.id, (modifiers.get(m.id) || 0) + line.quantity);
+   }
+   return {skus: [...skus].sort(([a], [b]) => a.localeCompare(b)), modifiers: [...modifiers].sort(([a], [b]) => a.localeCompare(b))};
+ }
+ export const orderView = (o: any) => {
+@@ -23,20 +24,22 @@ export class OrdersService {
+   constructor(@Inject(Db) private db: Db, @Inject(AuthService) private auth: AuthService) {}
+   async quote(req: any, body: unknown) {
+     const user = await this.auth.user(req);
+     const b = object(body, ['storeId', 'mode', 'lines', 'tableCode', 'address', 'note', 'couponId']);
+     if (b.mode === 'DELIVERY') fail('INTEGRATION_UNAVAILABLE', '配送范围与配送服务尚未配置，暂不可下配送单', 503);
+     const storeId = str(b.storeId, 'storeId');
+     if (user.role !== 'CUSTOMER') assertStoreAccess(user, storeId);
+     if (b.couponId !== undefined) fail('COUPON_UNSUPPORTED', 'R1尚不支持此优惠券');
+     if (!Array.isArray(b.lines) || !b.lines.length || b.lines.length > 100) fail('VALIDATION_ERROR', '购物车需包含1至100项');
+     return this.db.atomic(async tx => {
++      const user = await this.auth.user(req, tx);
++      if (user.role !== 'CUSTOMER') assertStoreAccess(user, storeId);
+       const store = await tx.store.findUnique({where: {id: storeId}});
+       if (!store || store.brandId !== user.brandId) fail('FORBIDDEN', '门店不可访问', 403);
+       if (!store.isOpen) fail('STORE_CLOSED', '门店休息中', 409);
+       if (!store.serviceModes.includes(b.mode)) fail('VALIDATION_ERROR', '不支持此服务方式');
+       let tableName: string | null = null;
+       if (b.mode === 'DINE_IN') {
+         const table = await tx.diningTable.findFirst({where: {storeId, code: str(b.tableCode, 'tableCode')}});
+         if (!table) fail('VALIDATION_ERROR', '桌码无效');
+         tableName = table.name;
+       }
+@@ -48,20 +51,21 @@ export class OrdersService {
+       const lines = [];
+       const needed = new Map<string, number>();
+       const modifierNeeded = new Map<string, number>();
+       for (const input of b.lines) {
+         const l = object(input, ['skuId', 'quantity', 'modifierIds']);
+         const quantity = assertPositiveQuantity(l.quantity);
+         if (!Array.isArray(l.modifierIds) || l.modifierIds.length > 20 || l.modifierIds.some((v: any) => typeof v !== 'string')) fail('VALIDATION_ERROR', '加料格式无效');
+         const modifierIds = [...new Set<string>(l.modifierIds)].sort();
+         const sku = await tx.sku.findUnique({where: {id: str(l.skuId, 'skuId')}, include: {product: {include: {modifiers: true}}}});
+         if (!sku || sku.product.storeId !== storeId || !sku.product.isAvailable) fail('VALIDATION_ERROR', '商品不属于此门店或已下架');
++        await assertCategory(tx, sku.product.categoryId, user.brandId, storeId);
+         needed.set(sku.id, (needed.get(sku.id) || 0) + quantity);
+         if (sku.stock < needed.get(sku.id)!) fail('OUT_OF_STOCK', '商品库存不足', 409);
+         const modifiers = modifierIds.map(id => {
+           const m = sku.product.modifiers.find(x => x.id === id);
+           if (!m) fail('VALIDATION_ERROR', '加料不属于此商品');
+           modifierNeeded.set(id, (modifierNeeded.get(id) || 0) + quantity);
+           if (m.stock < modifierNeeded.get(id)!) fail('OUT_OF_STOCK', '加料库存不足', 409);
+           return {id, name: m.name, priceFen: m.priceFen};
+         });
+         const unitPriceFen = money(sku.priceFen + modifiers.reduce((s, m) => s + m.priceFen, 0));
+@@ -75,42 +79,44 @@ export class OrdersService {
+       const {note, tableName: t, address: a, ...publicQuote} = snapshot;
+       return {id: quote.id, ...publicQuote, expiresAt: quote.expiresAt};
+     });
+   }
+   authorize(user: Identity, order: any) {
+     if (order.store?.brandId !== user.brandId) fail('FORBIDDEN', '无此品牌订单权限', 403);
+     if (user.role === 'CUSTOMER') { if (order.userId !== user.id) fail('FORBIDDEN', '只能查看本人订单', 403); }
+     else assertStoreAccess(user, order.storeId);
+   }
+   async create(req: any, body: unknown) {
+-    const user = await this.auth.user(req);
++    await this.auth.user(req);
+     const b = object(body, ['quoteId']); const quoteId = str(b.quoteId, 'quoteId');
+     const key = str(req.headers['idempotency-key'], 'Idempotency-Key', 120);
+     const requestHash = createHash('sha256').update(JSON.stringify({quoteId})).digest('hex');
+     return this.db.atomic(async tx => {
++      const user = await this.auth.user(req, tx);
+       const existing = await tx.order.findUnique({where: {userId_idempotencyKey: {userId: user.id, idempotencyKey: key}}, include});
+       if (existing) {
+         this.authorize(user, existing);
+         if (existing.requestHash !== requestHash) fail('STATE_CONFLICT', '幂等键已绑定其他请求', 409);
+         return orderView(existing);
+       }
+       const quote = await tx.quote.findUnique({where: {id: quoteId}, include: {store: true, order: true}});
+       if (!quote || quote.userId !== user.id) fail('FORBIDDEN', '报价不属于当前用户', 403);
+       if (quote.order) fail('STATE_CONFLICT', '报价已用于下单', 409);
+       if (quote.expiresAt <= new Date()) fail('PRICE_CHANGED', '报价已过期，请重新报价', 409);
+       if (!quote.store.isOpen) fail('STORE_CLOSED', '门店休息中', 409);
+       if (user.role !== 'CUSTOMER') assertStoreAccess(user, quote.storeId);
+       const q = quote.snapshot as any;
+       if (!quote.store.serviceModes.includes(q.mode) || q.deliveryFeeFen !== (q.mode === 'DELIVERY' ? quote.store.deliveryFeeFen : 0) || q.subtotalFen < quote.store.minOrderFen) fail('PRICE_CHANGED', '门店规则已变更，请重新报价', 409);
+       for (const line of q.lines) {
+         const sku = await tx.sku.findUnique({where: {id: line.skuId}, include: {product: true}});
+         if (!sku || sku.product.storeId !== quote.storeId || !sku.product.isAvailable) fail('OUT_OF_STOCK', '商品已下架', 409);
++        await assertCategory(tx, sku.product.categoryId, user.brandId, quote.storeId);
+         let unit = sku.priceFen;
+         for (const m of line.modifiers) {
+           const current = await tx.modifier.findUnique({where: {id: m.id}});
+           if (!current || current.productId !== sku.productId || current.priceFen !== m.priceFen) fail('PRICE_CHANGED', '加料价格已变更', 409);
+           unit += current.priceFen;
+         }
+         if (unit !== line.unitPriceFen) fail('PRICE_CHANGED', '商品价格已变更，请重新报价', 409);
+       }
+       // Every writer locks aggregated modifier IDs, then SKU IDs, in stable order.
+       const counts = inventoryCounts(q.lines);
+@@ -169,52 +175,55 @@ export class OrdersService {
+         await this.settleInventory(tx, order, true);
+         await tx.order.update({where: {id: order.id}, data: {status: 'CANCELLED', paymentStatus: 'CLOSED', inventoryReleased: true, events: {create: {status: 'CANCELLED', label: '超过付款时限，订单自动关闭'}}}});
+         await tx.audit.create({data: {storeId: order.storeId, actorId: 'system:expiry', action: 'ORDER_EXPIRED', entityId: order.id, before: {status: 'PENDING_PAYMENT'}, after: {status: 'CANCELLED'}}});
+         return 1;
+       });
+     }
+     return expired;
+   }
+   async cancel(req: any, id: string, body: unknown) {
+     const b = object(body, ['reason']); if (b.reason !== undefined) str(b.reason, '原因', 500, true);
+-    const user = await this.auth.user(req);
++    await this.auth.user(req);
+     return this.db.atomic(async tx => {
++      const user = await this.auth.user(req, tx);
+       const order = await tx.order.findUnique({where: {id}, include});
+       if (!order) fail('NOT_FOUND', '订单不存在', 404); this.authorize(user, order);
+       if (order.status === 'CANCELLED') return orderView(order);
+       if (order.paymentStatus === 'PAID') fail('REFUND_UNAVAILABLE', '已收款订单需退款；真实退款服务尚未接入', 409);
+       if (order.status !== 'PENDING_PAYMENT' || order.inventoryReleased) fail('STATE_CONFLICT', '订单无法取消', 409);
+       await this.settleInventory(tx, order, true);
+       return orderView(await tx.order.update({where: {id}, data: {status: 'CANCELLED', paymentStatus: 'CLOSED', inventoryReleased: true, events: {create: {status: 'CANCELLED', label: b.reason || '订单已取消'}}}, include}));
+     });
+   }
+   async cash(req: any, id: string, body: unknown) {
+     const b = object(body, ['tenderedFen']); const tenderedFen = money(b.tenderedFen);
+-    const user = await this.auth.user(req);
++    await this.auth.user(req);
+     return this.db.atomic(async tx => {
++      const user = await this.auth.user(req, tx);
+       const order = await tx.order.findUnique({where: {id}, include});
+       if (!order) fail('NOT_FOUND', '订单不存在', 404); assertStoreAccess(user, order.storeId); this.authorize(user, order);
+       if (order.cash) return orderView(order);
+       if (order.status !== 'PENDING_PAYMENT' || order.paymentStatus !== 'UNPAID') fail('STATE_CONFLICT', '订单不可现金收款', 409);
+       if (order.paymentExpiresAt <= new Date()) fail('STATE_CONFLICT', '订单付款时限已过，不能收款', 409);
+       if (tenderedFen < order.totalFen) fail('VALIDATION_ERROR', '实收金额不足');
+       await this.settleInventory(tx, order, false);
+       await tx.cashPayment.create({data: {orderId: id, staffId: user.id, amountFen: order.totalFen, tenderedFen, changeFen: tenderedFen - order.totalFen}});
+       await tx.audit.create({data: {storeId: order.storeId, actorId: user.id, action: 'CASH_PAYMENT', entityId: id, after: {amountFen: order.totalFen, tenderedFen, changeFen: tenderedFen - order.totalFen}}});
+       return orderView(await tx.order.update({where: {id}, data: {paymentStatus: 'PAID', status: 'AWAITING_ACCEPTANCE', inventoryReleased: true, events: {create: {status: 'AWAITING_ACCEPTANCE', label: '员工已确认现金收款'}}}, include}));
+     });
+   }
+   async transition(req: any, id: string, body: unknown) {
+     const b = object(body, ['action', 'reason']);
+     if (b.reason !== undefined) str(b.reason, '原因', 500, true);
+-    const user = await this.auth.user(req);
++    await this.auth.user(req);
+     return this.db.atomic(async tx => {
++      const user = await this.auth.user(req, tx);
+       const order = await tx.order.findUnique({where: {id}, include});
+       if (!order) fail('NOT_FOUND', '订单不存在', 404); assertStoreAccess(user, order.storeId); this.authorize(user, order);
+       if (b.action === 'REJECT' && order.paymentStatus === 'PAID') fail('REFUND_UNAVAILABLE', '已收款订单拒绝需真实退款，退款尚未接入', 409);
+       if (!canTransition(order.status, b.action, order.mode)) fail('STATE_CONFLICT', '不允许此状态转换', 409);
+       const status = b.action === 'REJECT' ? 'CANCELLED' : transitions[order.status][b.action];
+       if (b.action === 'REJECT') await this.settleInventory(tx, order, true);
+       await tx.audit.create({data: {storeId: order.storeId, actorId: user.id, action: b.action, entityId: id, before: {status: order.status}, after: {status}}});
+       return orderView(await tx.order.update({where: {id}, data: {status, ...(b.action === 'REJECT' ? {paymentStatus: 'CLOSED', inventoryReleased: true} : {}), events: {create: {status, label: b.reason || ({PREPARING: '门店已接单，正在制作', READY: '餐品已备好', DELIVERING: '配送中', COMPLETED: '订单已完成', CANCELLED: '门店已拒绝订单'} as any)[status]}}}, include}));
+     });
+   }
+diff --git a/apps/api/tests/catalog-admin.test.ts b/apps/api/tests/catalog-admin.test.ts
+new file mode 100644
+index 0000000..be2b435
+--- /dev/null
++++ b/apps/api/tests/catalog-admin.test.ts
+@@ -0,0 +1,211 @@
++import {test} from 'node:test';
++import assert from 'node:assert/strict';
++import {createHash,randomBytes} from 'node:crypto';
++import {spawnSync} from 'node:child_process';
++import {mkdtemp,readFile,rm,rmdir,writeFile} from 'node:fs/promises';
++import {join,resolve} from 'node:path';
++import {tmpdir} from 'node:os';
++import pg from 'pg';
++import {PrismaClient} from '@prisma/client';
++import {createApp} from '../src/main';
++import {seed} from '../prisma/seed';
++
++let safe = false;
++try { safe = /^test_catalog_[a-z0-9_]+$/.test(new URL(process.env.DATABASE_URL || '').searchParams.get('schema') || ''); } catch {}
++if (!safe) throw new Error('Catalog tests require an isolated test_catalog_* schema');
++
++test('catalog module guard rejects unsafe schemas before database work', () => {
++  for (const schema of ['development','public',undefined]) {
++    const env={...process.env}; delete env.NODE_TEST_CONTEXT;
++    if(schema) env.DATABASE_URL=`postgresql://unused:unused@127.0.0.1:1/unused?schema=${schema}`; else delete env.DATABASE_URL;
++    const result=spawnSync(process.execPath,['--import','tsx','--test','--test-name-pattern','^catalog module guard','tests/catalog-admin.test.ts'],{cwd:resolve(__dirname,'..'),env:{...env,TSX_TSCONFIG_PATH:resolve(__dirname,'../tsconfig.json')},encoding:'utf8',windowsHide:true});
++    assert.equal(result.status,1); assert.match(result.stdout+result.stderr,/Catalog tests require an isolated test_catalog_\* schema/);
++    assert.doesNotMatch(result.stdout+result.stderr,/ECONNREFUSED|PrismaClientInitializationError/);
++  }
++});
++
++test('catalog runner preserves an existing schema and sentinel on create-name collision',async()=>{
++  const hex=randomBytes(6).toString('hex'),schema='test_catalog_'+hex;
++  const directory=await mkdtemp(join(tmpdir(),'catalog-runner-')),preload=join(directory,'fixed-random.cjs');
++  const client=new pg.Client({connectionString:process.env.DATABASE_URL});await client.connect();let created=false;
++  try {
++    await client.query(`CREATE SCHEMA "${schema}"`);created=true;
++    await client.query(`CREATE TABLE "${schema}".sentinel (value integer); INSERT INTO "${schema}".sentinel VALUES (42)`);
++    await writeFile(preload,`require('node:crypto').randomBytes=()=>Buffer.from('${hex}','hex');`);
++    const result=spawnSync(process.execPath,['--require',preload,'.superpowers/sdd/catalog-runner.cjs'],{cwd:resolve(__dirname,'../../..'),env:{...process.env},encoding:'utf8',windowsHide:true});
++    assert.equal(result.status,1,'colliding runner must fail safely');
++    assert.equal((await client.query('SELECT 1 FROM pg_namespace WHERE nspname=$1',[schema])).rowCount,1,'collision must preserve pre-existing schema');
++    assert.equal((await client.query(`SELECT value FROM "${schema}".sentinel`)).rows[0].value,42);
++  } finally {if(created) await client.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);await client.end();await rm(preload,{force:true});await rmdir(directory);}
++});
++
++test('catalog migration preserves legacy products, orders, inventory, sessions and unit text',async()=>{
++  const schema=new URL(process.env.DATABASE_URL!).searchParams.get('schema')!+'_migration';
++  assert.match(schema,/^test_catalog_[a-z0-9_]+$/);
++  const client=new pg.Client({connectionString:process.env.DATABASE_URL}); await client.connect();
++  try {
++    await client.query(`CREATE SCHEMA "${schema}"`); await client.query(`SET search_path TO "${schema}"`);
++    for(const name of ['202610200001_initial','202610200002_integrity','202610200003_stock_capacity','202610200004_payment_expiry','202610200005_staff_access']) {
++      await client.query(await readFile(resolve(__dirname,'../prisma/migrations',name,'migration.sql'),'utf8'));
++    }
++    await client.query(`INSERT INTO "Brand" (id,name) VALUES ('legacy-b','旧品牌'),('other-b','其他品牌');
++      INSERT INTO "Store" (id,"brandId",name,address,phone) VALUES ('legacy-s','legacy-b','旧店','',''),('other-s','other-b','其他店','','');
++      INSERT INTO "Category" (id,"brandId",name) VALUES ('legacy-c','legacy-b','旧分类'),('other-c','other-b','其他分类');
++      INSERT INTO "Product" (id,"storeId","categoryId",name,unit) VALUES ('legacy-p1','legacy-s','legacy-c','重复商品',' 份 '),('legacy-p2','legacy-s','legacy-c','重复商品',' 份 '),('legacy-p3','legacy-s','legacy-c','杯装','杯'),('other-p','other-s','other-c','其他',' 份 ');
++      INSERT INTO "Sku" (id,"productId",name,"priceFen",stock,reserved) VALUES ('legacy-sku','legacy-p1','标准',100,7,2);
++      INSERT INTO "User" (id,"brandId",name,role) VALUES ('legacy-user','legacy-b','旧顾客','CUSTOMER');
++      INSERT INTO "Session" (id,"tokenHash","userId","expiresAt") VALUES ('legacy-session','legacy-hash','legacy-user',now()+interval '1 day');
++      INSERT INTO "Quote" (id,"userId","storeId",snapshot,"expiresAt") VALUES ('legacy-q','legacy-user','legacy-s','{"lines":[{"unit":" 份 "}]}',now()+interval '1 day');
++      INSERT INTO "Order" (id,number,"userId","storeId","quoteId","idempotencyKey","requestHash",mode,"subtotalFen","deliveryFeeFen","packagingFeeFen","discountFen","totalFen","storeName",lines) VALUES ('legacy-order','legacy-number','legacy-user','legacy-s','legacy-q','key','hash','PICKUP',100,0,0,0,100,'旧店','[{"unit":" 份 "}]');`);
++    const beforeProducts=(await client.query('SELECT * FROM "Product" ORDER BY id')).rows;
++    const tables=['Order','Quote','Sku','Session']; const snapshots=new Map<string,string>();
++    for(const table of tables) snapshots.set(table,JSON.stringify((await client.query(`SELECT * FROM "${table}" ORDER BY id`)).rows));
++    await client.query(await readFile(resolve(__dirname,'../prisma/migrations/202610200006_catalog_settings/migration.sql'),'utf8'));
++    const products=(await client.query('SELECT * FROM "Product" ORDER BY id')).rows;
++    assert.deepEqual(products.map(({unitId,...p}:any)=>p),beforeProducts);
++    assert.ok(products.every((p:any)=>p.unitId)); assert.equal(products.find((p:any)=>p.id==='legacy-p1').unitId,products.find((p:any)=>p.id==='legacy-p2').unitId);
++    assert.notEqual(products.find((p:any)=>p.id==='legacy-p1').unitId,products.find((p:any)=>p.id==='other-p').unitId);
++    assert.equal((await client.query('SELECT * FROM "Unit"')).rowCount,3);
++    assert.equal((await client.query('SELECT * FROM "Category" WHERE NOT enabled OR revision<>0 OR NOT "allStores"')).rowCount,0);
++    for(const table of tables) assert.equal(JSON.stringify((await client.query(`SELECT * FROM "${table}" ORDER BY id`)).rows),snapshots.get(table),table+' unchanged');
++  } finally {await client.query('ROLLBACK');await client.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);await client.end();}
++});
++
++test('catalog settings enforce real database permissions, revisions, visibility, units and existing orders', async () => {
++  process.env.NODE_ENV = 'test'; process.env.DEV_AUTH_ENABLED = 'true'; process.env.DEV_SEED_ENABLED = 'true';
++  const db = new PrismaClient();
++  await seed(db);
++  const app = await createApp(); await app.listen(0, '127.0.0.1');
++  const base = await app.getUrl() + '/api/v1', a = 'experience-store-a', b = 'experience-store-b';
++  async function req(path: string, token?: string, body?: any, method?: string, key?: string) {
++    const response = await fetch(base + path, {method: method || (body ? 'POST' : 'GET'), headers: {'Content-Type':'application/json', ...(token ? {Authorization:`Bearer ${token}`} : {}), ...(key ? {'Idempotency-Key':key} : {})}, body: body ? JSON.stringify(body) : undefined});
++    return {status:response.status, body:await response.json() as any};
++  }
++  try {
++    const login = async (account: string) => (await req('/auth/dev-login', undefined, {account})).body.data.token;
++    const owner = await login('owner'), clerk = await login('clerk-a'), customer = await login('customer');
++    const settings = () => req(`/merchant/catalog-settings?storeId=${a}`, owner);
++    const initial = await settings(); assert.equal(initial.status, 200, 'settings endpoint exists');
++    assert.equal(initial.body.data.canManageBrand, true); assert.equal(initial.body.data.stores.length, 2);
++    const create = (kind: string, name: string, token = owner) => req(`/merchant/${kind}`, token, {storeId:a, name});
++    const patch = (kind: string, id: string, body: any, token = owner) => req(`/merchant/${kind}/${id}`, token, {storeId:a, expectedRevision:0, ...body}, 'PATCH');
++    const del = (kind: string, id: string, revision = 0) => req(`/merchant/${kind}/${id}`, owner, {storeId:a, expectedRevision:revision}, 'DELETE');
++    const category = (await create('categories','新分类')).body.data;
++    assert.equal(category.enabled, true); assert.equal(category.revision,0); assert.equal(category.visibleStoreIds,null);
++    assert.equal((await create('categories','店员修改',clerk)).status,403);
++    const limited = await db.user.create({data:{brandId:'experience-brand',name:'单店店主',role:'OWNER',staff:{create:{storeId:a}}}});
++    const limitedToken = 'L'.repeat(43);
++    await db.session.create({data:{userId:limited.id,tokenHash:createHash('sha256').update(limitedToken).digest('hex'),expiresAt:new Date(Date.now()+60000)}});
++    assert.equal((await create('categories','部分授权',limitedToken)).status,403);
++    const restricted = await req(`/merchant/catalog-settings?storeId=${a}`,limitedToken);
++    assert.equal(restricted.body.data.canManageBrand,false); assert.deepEqual(restricted.body.data.stores.map((x:any)=>x.id),[a]);
++    assert.ok(!JSON.stringify(restricted.body.data).includes(b),'settings redact unauthorized store ids');
++    assert.equal((await req(`/merchant/catalog-settings?storeId=${b}`,limitedToken)).status,403);
++    await db.brand.create({data:{id:'catalog-foreign',name:'隔离品牌'}});
++    await db.store.create({data:{id:'catalog-foreign-store',brandId:'catalog-foreign',name:'秘密门店',address:'',phone:''}});
++    const foreign = await db.category.create({data:{brandId:'catalog-foreign',name:'隔离分类'}});
++    assert.equal((await patch('categories',foreign.id,{name:'越权'})).status,403);
++    for (const body of [{},{sort:-1},{sort:1.5},{sort:100001},{enabled:'false'},{name:' '},{name:'x'.repeat(81)},{extra:1},{expectedRevision:-1,name:'bad'},{visibleStoreIds:1},{visibleStoreIds:[1]},{visibleStoreIds:Array(101).fill(a)},{visibleStoreIds:['catalog-foreign-store']}]) {
++      assert.ok([400,403].includes((await patch('categories',category.id,body)).status));
++    }
++    const changed = await patch('categories',category.id,{name:'改名分类',sort:100,visibleStoreIds:[b]});
++    assert.equal(changed.status,200); assert.equal(changed.body.data.revision,1); assert.deepEqual(changed.body.data.visibleStoreIds,[b]);
++    assert.equal((await patch('categories',category.id,{name:'过期'})).status,409);
++    const races = await Promise.all([patch('categories',category.id,{expectedRevision:1,sort:2}),patch('categories',category.id,{expectedRevision:1,sort:3})]);
++    assert.deepEqual(races.map(x=>x.status).sort(),[200,409]);
++    assert.equal((await del('categories',category.id,2)).status,200);
++    const signature = 'experience-cat-signature', productId = 'experience-a-chicken', skuId = productId+'-sku-0';
++    const quote = async () => req('/quotes',customer,{storeId:a,mode:'PICKUP',lines:[{skuId,quantity:1,modifierIds:[]}]});
++    const order = async (key:string) => {const q=await quote(); assert.equal(q.status,201); return req('/orders',customer,{quoteId:q.body.data.id},undefined,key);};
++    const cancelOrder = (await order('catalog-cancel')).body.data, cashOrder = (await order('catalog-cash')).body.data;
++    const old = (await quote()).body.data;
++    const disabled = await patch('categories',signature,{enabled:false}); assert.equal(disabled.status,200);
++    const menu = (await req(`/stores/${a}/catalog`)).body.data;
++    assert.ok(!menu.categories.some((c:any)=>c.id===signature)); assert.ok(!menu.products.some((p:any)=>p.categoryId===signature));
++    assert.equal((await quote()).status,409);
++    const stale = await req('/orders',customer,{quoteId:old.id},undefined,'catalog-stale'); assert.equal(stale.status,409); assert.match(stale.body.error.message,/刷新/); assert.ok(stale.body.requestId);
++    assert.equal((await req(`/orders/${cancelOrder.id}/cancel`,customer,{})).status,201);
++    assert.equal((await req(`/merchant/orders/${cashOrder.id}/cash-payment`,clerk,{tenderedFen:cashOrder.totalFen})).body.data.paymentStatus,'PAID');
++    for(const action of ['ACCEPT','READY','COMPLETE']) assert.equal((await req(`/merchant/orders/${cashOrder.id}/transition`,clerk,{action})).status,201,'existing paid orders remain fulfillable under disabled categories');
++    assert.equal((await db.sku.findUniqueOrThrow({where:{id:skuId}})).reserved,0);
++    assert.equal((await del('categories',signature,1)).body.error.code,'REFERENCE_CONFLICT');
++    await patch('categories',signature,{expectedRevision:1,enabled:true});
++    const oldVisibleQuote=(await quote()).body.data;
++    await patch('categories',signature,{expectedRevision:2,visibleStoreIds:[b]});
++    assert.equal((await quote()).status,409);
++    assert.equal((await req('/orders',customer,{quoteId:oldVisibleQuote.id},undefined,'catalog-hidden-stale')).status,409);
++    assert.ok(!(await req(`/stores/${a}/catalog`)).body.data.products.some((p:any)=>p.id===productId));
++    assert.ok((await req(`/stores/${b}/catalog`)).body.data.categories.some((c:any)=>c.id===signature));
++    const restrictedExplicit = (await req(`/merchant/catalog-settings?storeId=${a}`,limitedToken)).body.data;
++    assert.ok(!JSON.stringify(restrictedExplicit).includes(b));
++    await patch('categories',signature,{expectedRevision:3,visibleStoreIds:[]});
++    assert.ok(!(await req(`/stores/${b}/catalog`)).body.data.categories.some((c:any)=>c.id===signature));
++    await patch('categories',signature,{expectedRevision:4,visibleStoreIds:null});
++    const sorted = (await settings()).body.data.categories; assert.deepEqual(sorted.map((x:any)=>x.id),[...sorted].sort((x:any,y:any)=>x.sort-y.sort||x.id.localeCompare(y.id)).map((x:any)=>x.id));
++    const u = (await create('units','  碗  ')).body.data; assert.equal(u.name,'碗');
++    assert.equal((await create('units','碗')).status,409); assert.equal((await create('units','店员单位',clerk)).status,403); assert.equal((await create('units','受限单位',limitedToken)).status,403);
++    for (const name of ['', 'x'.repeat(21)]) assert.equal((await create('units',name)).status,400);
++    const duplicateUnits=await Promise.all([create('units','并发同名'),create('units','并发同名')]); assert.deepEqual(duplicateUnits.map(x=>x.status).sort(),[201,409]);
++    assert.equal(await db.unit.count({where:{brandId:'experience-brand',name:'并发同名'}}),1);
++    const foreignUnit=await db.unit.create({data:{brandId:'catalog-foreign',name:'外国单位'}});
++    assert.equal((await patch('units',foreignUnit.id,{enabled:false})).status,403);
++    assert.equal((await patch('units',u.id,{name:'禁止'},clerk)).status,403); assert.equal((await patch('units',u.id,{name:'禁止'},limitedToken)).status,403);
++    assert.equal((await req(`/merchant/units/${u.id}`,clerk,{storeId:a,expectedRevision:0},'DELETE')).status,403);
++    const productBody = {storeId:a,categoryId:signature,name:'单位商品',description:'',unitId:u.id,skus:[{name:'标准',priceFen:100,stock:5}]};
++    const made = await req('/merchant/products',owner,productBody); assert.equal(made.status,201); const product=made.body.data;
++    assert.equal((await req('/merchant/products',owner,{...productBody,unitId:foreignUnit.id})).status,403);
++    assert.equal((await req('/merchant/products',owner,{...productBody,categoryId:foreign.id})).status,403);
++    assert.equal((await del('units',u.id)).body.error.code,'REFERENCE_CONFLICT');
++    const unitQuote=await req('/quotes',customer,{storeId:a,mode:'PICKUP',lines:[{skuId:product.skus[0].id,quantity:1,modifierIds:[]}]});
++    const unitOrder=await req('/orders',customer,{quoteId:unitQuote.body.data.id},undefined,'catalog-unit-snapshot'); assert.equal(unitOrder.status,201);
++    const snapshotBefore=(await db.order.findUniqueOrThrow({where:{id:unitOrder.body.data.id}})).lines;
++    assert.equal((await patch('units',u.id,{name:'大碗'})).status,200);
++    assert.equal((await req(`/stores/${a}/catalog`)).body.data.products.find((p:any)=>p.id===product.id).unit,'大碗');
++    assert.deepEqual((await db.order.findUniqueOrThrow({where:{id:unitOrder.body.data.id}})).lines,snapshotBefore);
++    assert.equal((await req(`/orders/${unitOrder.body.data.id}/cancel`,customer,{})).status,201);
++    assert.equal((await patch('units',u.id,{expectedRevision:1,enabled:false})).status,200);
++    assert.equal((await req('/merchant/products',owner,productBody)).status,409);
++    assert.equal((await req(`/merchant/products/${product.id}`,owner,{storeId:a,unitId:u.id},'PATCH')).status,409);
++    assert.equal((await req(`/merchant/products/${product.id}`,owner,{storeId:a,name:'仍可改名'},'PATCH')).status,200);
++    assert.equal((await req(`/merchant/skus/${product.skus[0].id}`,owner,{storeId:a,priceFen:120,stock:3},'PATCH')).status,200);
++    assert.equal((await req('/quotes',customer,{storeId:a,mode:'PICKUP',lines:[{skuId:product.skus[0].id,quantity:1,modifierIds:[]}]})).status,201);
++    assert.equal((await req('/merchant/products',owner,{...productBody,unitId:undefined,unit:'不存在'})).status,400);
++    const byText = await req('/merchant/products',owner,{...productBody,unitId:undefined,unit:'份'}); assert.equal(byText.status,201); assert.ok(byText.body.data.unitId);
++    const unused = (await create('units','盒')).body.data;
++    assert.equal((await patch('units',unused.id,{name:'大碗'})).status,409);
++    const unitRace=await Promise.all([patch('units',unused.id,{name:'小盒'}),patch('units',unused.id,{name:'中盒'})]); assert.deepEqual(unitRace.map(x=>x.status).sort(),[200,409]);
++    assert.equal((await del('units',unused.id,0)).status,409); assert.equal((await del('units',unused.id,1)).status,200);
++    for(let i=0;i<5;i++) {
++      const racing=(await create('units','引用竞争'+i)).body.data;
++      const results=await Promise.all([req('/merchant/products',owner,{...productBody,unitId:racing.id}),del('units',racing.id)]);
++      assert.ok(results.every(r=>r.status<500),'reference/create race returns controlled business errors');
++      if(results[0].status===201) {assert.equal(results[1].status,409);assert.ok(await db.unit.findUnique({where:{id:racing.id}}));}
++    }
++    const raw = await db.product.create({data:{storeId:a,categoryId:signature,name:'旧记录',unit:'盘'}});
++    assert.equal((await req(`/stores/${a}/catalog`)).body.data.products.find((p:any)=>p.id===raw.id).unit,'盘');
++    await seed(db); assert.equal((await db.product.findUniqueOrThrow({where:{id:product.id}})).name,'仍可改名');
++    assert.equal((await db.unit.findUniqueOrThrow({where:{id:u.id}})).enabled,false);
++    const defaultUnit=await db.unit.findUniqueOrThrow({where:{brandId_name:{brandId:'experience-brand',name:'份'}}});
++    const seededUnit=await db.unit.update({where:{id:defaultUnit.id},data:{id:'legacy-seeded-unit'}});
++    assert.equal((await patch('units',seededUnit.id,{name:'餐份',enabled:false})).status,200);
++    await seed(db);
++    assert.equal(await db.unit.count({where:{brandId:'experience-brand',name:'份'}}),0,'re-seed must not recreate renamed default units');
++    assert.equal((await db.unit.findUniqueOrThrow({where:{id:seededUnit.id}})).enabled,false);
++    const future = await db.store.create({data:{brandId:'experience-brand',name:'未来门店',address:'',phone:''}});
++    assert.ok((await req(`/stores/${future.id}/catalog`)).body.data.categories.some((c:any)=>c.id===signature),'allStores applies to future stores');
++    assert.equal((await create('units','新增门店后缺授权')).status,403);
++    await db.staffStore.create({data:{userId:'experience-user-owner',storeId:future.id}});
++    const preflight=await fetch(base+'/merchant/units/'+u.id,{method:'OPTIONS',headers:{Origin:'http://127.0.0.1:5175','Access-Control-Request-Method':'DELETE','Access-Control-Request-Headers':'Authorization,Content-Type,X-Request-Id'}});
++    assert.equal(preflight.status,204); assert.match(preflight.headers.get('access-control-allow-methods')||'',/DELETE/);
++    assert.ok(await db.audit.count({where:{action:'CATEGORY_UPDATE'}})>0); assert.ok(await db.audit.count({where:{action:'UNIT_UPDATE'}})>0);
++    const auditCount=await db.audit.count({where:{entityId:u.id}});
++    assert.equal((await patch('units',u.id,{expectedRevision:0,name:'旧版本'})).status,409);
++    assert.equal(await db.audit.count({where:{entityId:u.id}}),auditCount,'rejected edits do not create audit records');
++    await db.staffStore.delete({where:{userId_storeId:{userId:'experience-user-owner',storeId:future.id}}});
++    assert.equal((await create('units','旧会话撤权')).status,403);
++    const newOwner=await login('owner'); assert.equal((await create('units','新会话撤权',newOwner)).status,403);
++    await db.staffStore.create({data:{userId:'experience-user-owner',storeId:future.id}});
++    await db.user.update({where:{id:'experience-user-owner'},data:{enabled:false}});
++    assert.equal((await create('units','停用会话')).status,401); assert.equal((await req('/auth/dev-login',undefined,{account:'owner'})).status,401);
++  } finally {await app.close(); await db.$disconnect();}
++});
+diff --git a/apps/api/tests/integration.test.ts b/apps/api/tests/integration.test.ts
+index 6d47603..fb7e1ae 100644
+--- a/apps/api/tests/integration.test.ts
++++ b/apps/api/tests/integration.test.ts
+@@ -7,21 +7,21 @@ import { OrdersService } from '../src/modules/orders/orders.service';
+ 
+ test('database-backed security, quotes, inventory, idempotency, cash and CMS', async () => {
+   const url = new URL(process.env.DATABASE_URL!);
+   assert.match(url.searchParams.get('schema') || '', /^test_/,'Integration tests require an isolated test_* schema');
+   process.env.NODE_ENV = 'test'; process.env.DEV_AUTH_ENABLED = 'true'; process.env.DEV_SEED_ENABLED = 'true';
+   const db = new PrismaClient();
+   // Destructive setup is restricted to the explicitly selected test_* schema.
+   await db.$transaction([
+     db.session.deleteMany(), db.audit.deleteMany(), db.cashPayment.deleteMany(), db.orderEvent.deleteMany(),
+     db.order.deleteMany(), db.quote.deleteMany(), db.staffStore.deleteMany(), db.page.deleteMany(), db.diningTable.deleteMany(),
+-    db.modifier.deleteMany(), db.sku.deleteMany(), db.product.deleteMany(), db.category.deleteMany(), db.user.deleteMany(), db.store.deleteMany(), db.brand.deleteMany()
++    db.modifier.deleteMany(), db.sku.deleteMany(), db.product.deleteMany(), db.category.deleteMany(), db.unit.deleteMany(), db.user.deleteMany(), db.store.deleteMany(), db.brand.deleteMany()
+   ]);
+   await seed(db);
+   const app = await createApp(); await app.listen(0, '127.0.0.1');
+   const base = await app.getUrl() + '/api/v1';
+   async function request(path: string, token?: string, body?: any, method?: string, key?: string) {
+     const res = await fetch(base + path, {method: method || (body ? 'POST' : 'GET'), headers: {'Content-Type': 'application/json', ...(token ? {Authorization: `Bearer ${token}`} : {}), ...(key ? {'Idempotency-Key': key} : {})}, body: body ? JSON.stringify(body) : undefined});
+     return {status: res.status, body: await res.json() as any};
+   }
+   try {
+     const login = async (account: string) => (await request('/auth/dev-login', undefined, {account})).body.data.token;
+diff --git a/apps/api/tests/staff-access.test.ts b/apps/api/tests/staff-access.test.ts
+index fb816e2..2c3ca3a 100644
+--- a/apps/api/tests/staff-access.test.ts
++++ b/apps/api/tests/staff-access.test.ts
+@@ -30,21 +30,21 @@ test('scrypt credentials use fresh salts and reject malformed or uncontrolled fo
+   }
+ });
+ 
+ test('staff credentials and authorization persist through real HTTP and PostgreSQL', async () => {
+   assert.equal(new URL(process.env.DATABASE_URL!).searchParams.get('schema'), 'test_staff_access', 'Staff tests require their isolated schema');
+   process.env.NODE_ENV = 'test'; process.env.DEV_AUTH_ENABLED = 'true'; process.env.DEV_SEED_ENABLED = 'true';
+   const db = new PrismaClient();
+   await db.$transaction([
+     db.session.deleteMany(), db.audit.deleteMany(), db.cashPayment.deleteMany(), db.orderEvent.deleteMany(),
+     db.order.deleteMany(), db.quote.deleteMany(), db.staffStore.deleteMany(), db.page.deleteMany(), db.diningTable.deleteMany(),
+-    db.modifier.deleteMany(), db.sku.deleteMany(), db.product.deleteMany(), db.category.deleteMany(), db.user.deleteMany(), db.store.deleteMany(), db.brand.deleteMany()
++    db.modifier.deleteMany(), db.sku.deleteMany(), db.product.deleteMany(), db.category.deleteMany(), db.unit.deleteMany(), db.user.deleteMany(), db.store.deleteMany(), db.brand.deleteMany()
+   ]);
+   await seed(db);
+   const app = await createApp(); await app.listen(0, '127.0.0.1');
+   const base = await app.getUrl() + '/api/v1';
+   const a = 'experience-store-a', b = 'experience-store-b';
+   const password = ' Test-secret-2026 ';
+   async function request(path: string, token?: string, body?: unknown, method?: string) {
+     const res = await fetch(base + path, {method: method || (body ? 'POST' : 'GET'), headers: {'Content-Type': 'application/json', ...(token ? {Authorization: `Bearer ${token}`} : {})}, body: body ? JSON.stringify(body) : undefined});
+     return {status: res.status, body: await res.json() as any};
+   }
+diff --git a/docs/architecture/api-contract.md b/docs/architecture/api-contract.md
+index c170fe3..52a6df4 100644
+--- a/docs/architecture/api-contract.md
++++ b/docs/architecture/api-contract.md
+@@ -8,21 +8,21 @@
+ - Authorization: Bearer token；写订单 Idempotency-Key。Error code 如 UNAUTHENTICATED、FORBIDDEN、VALIDATION_ERROR、STORE_CLOSED、OUT_OF_STOCK、PRICE_CHANGED、STATE_CONFLICT。
+ - GET /health 公共，返回 {status:'ok',database:'connected'}（数据库不可用不能仍返回 connected）。
+ - POST /auth/dev-login 仅 NODE_ENV 非 production 且 DEV_AUTH_ENABLED=true 时存在。body {account:'customer'|'owner'|'clerk-a'|'clerk-b'}；实际查开发种子中对应账户，不接收任意角色；返回 {token,user:{id,name,role,storeIds:string[]},environment:'development'}。
+ - POST /auth/wechat {code,client:'customer'|'merchant'}：未配置时 503 INTEGRATION_UNAVAILABLE，不伪造登录。
+ - GET /me：返回当前用户，商户需 storeIds；成员信息包含真实积分/余额（R1 若无账户可为0，但不得编造权益）。
+ 
+ ## 业务读模型
+ 
+ Store = {id,name,address,phone,notice,isOpen:boolean,serviceModes:('DINE_IN'|'PICKUP'|'DELIVERY')[],pickupMinutes:number,deliveryFeeFen:number,minOrderFen:number,themeColor:string}。
+ Category = {id,name,sort:number}。
+-Product = {id,categoryId,name,description,imageUrl:string|null,unit:string,isAvailable:boolean,skus:Sku[],modifiers:Modifier[]}。
++Product = {id,categoryId,name,description,imageUrl:string|null,unit:string,unitId:string|null,isAvailable:boolean,skus:Sku[],modifiers:Modifier[]}。unit 优先使用关联单位的当前名称，无关联的旧记录兼容原 unit 文本。
+ Sku = {id,name,priceFen:number,available:number}。
+ Modifier = {id,name,priceFen:number,available:number}。
+ 商品图片来源由后台保存；开发种子必须明确隔离并在应用显示“体验门店”，不要从前端常量填充业务列表。
+ GET /stores 公共：Store[]。
+ GET /stores/:storeId/catalog 公共：{categories:Category[],products:Product[]}。
+ GET /stores/:storeId/tables 公共（仅返回桌号基本资料）：{id,name,capacity,status:'FREE'|'OCCUPIED',code:string}[]。
+ GET /public-config?storeId=...：{brandId,brandName,environment:'development'|'test'|'production',home:{notice,bannerTitle,bannerSubtitle},theme:{primaryColor}}；允许无 storeId 返回品牌配置。brandId来自服务端公开品牌选择，用于员工登录，不接受前端写死体验品牌。
+ 
+ ## 报价与订单
+ 
+@@ -39,30 +39,47 @@ GET /orders?storeId=&status=：客户只看自己；员工仅允许门店；返
+ GET /orders/:id 返回 Order 严格权限。
+ POST /orders/:id/cancel {reason?:string} 未付款取消释放库存；重复取消可安全返回原结果；已付款转退款策略，不能直接改未付款。
+ POST /orders/:id/payment {provider:'WECHAT'}：未配置 503；真实实现返回 requestPayment 参数，不能返回假已支付。
+ 
+ ## 商户 API
+ 
+ 以下必须员工授权，storeId 来自请求但服务端验证。
+ GET /merchant/overview?storeId=：{paidRevenueFen,refundFen,netRevenueFen,orderCount,pendingCount,preparingCount,readyCount,lowStockCount} 全部真实聚合。
+ PATCH /merchant/stores/:storeId body 只允许 {name,address,phone,notice,isOpen,pickupMinutes,deliveryFeeFen,minOrderFen,themeColor} 白名单；owner可维护门店规则，clerk仅营业状态。
+ GET /merchant/products?storeId=：{categories,products}，含不可售商品。
+-POST /merchant/products body {storeId,categoryId,name,description,imageUrl?,unit,skus:{name,priceFen,stock}[]} owner 权限。
+-PATCH /merchant/products/:productId body {storeId,name?,description?,isAvailable?,imageUrl?,unit?}。
++POST /merchant/products body {storeId,categoryId,name,description,imageUrl?,unitId?,unit?,skus:{name,priceFen,stock}[]} 当前门店 OWNER 权限。unitId 与 unit 至少一个，优先 unitId；同时传时名称必须一致。只传 unit 文本解析同品牌已有有效单位，不自动创建；不存在400 VALIDATION_ERROR、其他品牌403 FORBIDDEN、停用409 STATE_CONFLICT。
++PATCH /merchant/products/:productId body {storeId,categoryId?,name?,description?,isAvailable?,imageUrl?,unitId?,unit?}。改分类时校验同品牌、启用及本店可见。没有改变单位时必须省略 unit/unitId；显式选择停用单位会409，原商品仅改名称/价格/库存不受其已有单位停用影响。商品新增/修改及规格写入在事务内复核当前 OWNER 与门店权限；分类和单位校验与商品写入、审计原子提交。
+ PATCH /merchant/skus/:skuId body {storeId,priceFen?,stock?}：stock 指可售库存，保留 reserved；审计旧值/新值。
+-POST /merchant/categories body {storeId,name}，归品牌（R1无门店分类覆盖）。
++POST /merchant/categories body {storeId,name}，归品牌；管理规则与其他分类/单位接口见下节。
+ POST /merchant/orders/:id/transition {action:'ACCEPT'|'START'|'READY'|'DISPATCH'|'COMPLETE'|'REJECT',reason?}，依合法状态转移；已支付拒绝需要真实退款或明确未完成错误，不能吞钱。
+ POST /merchant/orders/:id/cash-payment {tenderedFen:number}：仅授权员工确认现金，必须 >= totalFen；写现金收款、找零、原子确认订单；重复调用不重复入账；返回 Order。
+ GET /merchant/members?storeId=&search= 返回实际 {id,name,phone,levelName,balanceFen,points}[]，字段脱敏。
+ GET /merchant/staff?storeId= 返回实际 Staff[]，仅当前有效 OWNER 可读（员工凭据与授权规则见下节）。
+ GET /merchant/audit?storeId= 返回分页审计记录（不含密钥及密码）。
+ 
++## 品牌分类与单位设置（2026-10-20）
++
++SettingsCategory = {id,name,sort:number,enabled:boolean,revision:number,visibleStoreIds:string[]|null,productCount:number}。
++Unit = {id,name,enabled:boolean,revision:number,productCount:number}。
++
++- GET /merchant/catalog-settings?storeId= 返回 {canManageBrand:boolean,categories:SettingsCategory[],units:Unit[],stores:{id,name}[]}。要求当前门店的有效 OWNER/CLERK 授权。categories 按 sort、id 升序；stores 只含当前操作者授权的本品牌门店。canManageBrand 仅当 OWNER 拥有该品牌全部现有门店授权时为 true。不能管理品牌的用户看到的 visibleStoreIds 仅含可访问门店，不能据此写回全品牌配置。
++- POST /merchant/categories {storeId,name} 返回201 SettingsCategory；默认 sort=0、enabled=true、revision=0、visibleStoreIds=null。
++- PATCH /merchant/categories/:id {storeId,expectedRevision,name?,sort?,enabled?,visibleStoreIds?} 返回200 SettingsCategory。至少一个变更字段；名称去首尾空白后1至80字，sort 为0至100000整数，enabled 为布尔。visibleStoreIds=null 表示本品牌全部当前及未来门店，数组完整替换显式可见集合，[] 表示全部隐藏；省略则保留原值。数组最多100项，去重后逐项验证同品牌；其他品牌403 FORBIDDEN。
++- DELETE /merchant/categories/:id {storeId,expectedRevision} 返回200 {id,deleted:true}。有任何商品引用时409 REFERENCE_CONFLICT，应先调整商品或停用分类。
++- POST /merchant/units {storeId,name} 返回201 Unit，默认 enabled=true、revision=0。名称去首尾空白后1至20字，同品牌同名409 NAME_CONFLICT。
++- PATCH /merchant/units/:id {storeId,expectedRevision,name?,enabled?} 返回200 Unit，至少一个变更字段。改名后所有关联商品的新查询显示新名称；订单、报价历史快照不改写。停用单位仍可供已关联商品展示及下单，不能在新增商品或单位变更时选择。
++- DELETE /merchant/units/:id {storeId,expectedRevision} 返回200 {id,deleted:true}。有商品引用时409 REFERENCE_CONFLICT。
++- 上述所有写操作要求有效 OWNER 且拥有该品牌全部现有门店授权；单店 OWNER、CLERK、跨品牌目标均403。每个操作在 Serializable 事务内实时复核会话、enabled、角色和当前授权，数据、可见关系、版本与审计原子提交。新门店加入而操作者尚未获授权时也不能修改品牌设置。
++- PATCH/DELETE 的 expectedRevision 为0至2000000000整数，成功 PATCH 递增1；旧版本409 STATE_CONFLICT（与员工管理 VERSION_CONFLICT 区分），界面应刷新后重新确认，不自动覆盖。并发同版本修改最多一方成功。严格拒绝未知字段与空修改。错误响应均保留 requestId。
++- 公开菜单同时过滤停用/本店隐藏分类及其商品。报价及下单也核验相同规则，包括已生成报价；失效返回409 CATALOG_CHANGED，提示刷新菜单。已经存在的订单现金、履约、取消和超时释放库存保持可用，重复下单幂等仍返回已有订单。
++- 迁移006增加 Category 状态/版本/allStores、可见映射、品牌 Unit 与可空 Product.unitId，按商品所属门店的品牌和原 unit 文本去重、回填，原文本和商品记录完整保留。默认全品牌可见；不重置存量数据。跨域预检允许 DELETE，原认证和请求头规则保持。
++
+ ## 员工凭据与授权（2026-10-20）
+ 
+ Staff = {id:string,name:string,role:'OWNER'|'CLERK',account:string|null,enabled:boolean,revision:number,storeIds:string[]}。account=null 表示尚未建立员工凭据的既有身份。响应、审计均不含密码或 passwordHash。
+ 
+ - POST /auth/staff-login {brandId:string,account:string,password:string}，成功201返回 {token,user:{id,name,role,brandId,storeIds,balanceFen,points,levelName},environment:string}；environment 为实际 NODE_ENV（未设置时 development）。账号不区分大小写；密码保留首尾空白。错误密码、不存在、已停用账号统一401 UNAUTHENTICATED / 账号或密码不正确。相同客户端 IP+品牌+规范化账号15分钟最多10次尝试，超限429 RATE_LIMITED；进程内窗口最多5000项。结构错误400，不计入登录次数。当前 OWNER 与 CLERK 均可通过真实凭据登录；首位 OWNER 使用受控离线命令初始化，命令及受限文件步骤见config/README.md，无凭据的旧OWNER不会获得默认密码。
+ - POST /auth/logout {}，201返回 {revoked:true}，只撤销请求 Bearer token 对应会话；重复、过期或缺失 token 均安全返回。其他设备会话不受本次退出影响。
+ - GET /merchant/staff?storeId=，200 Staff[]：仅列同品牌且授权包含查询门店的 OWNER/CLERK，最多100条；storeIds 仅包含查询者当前有权管理的门店。跨品牌、查询门店未授权或非 OWNER 均403。
+ - POST /merchant/staff {storeId,name,account,password,storeIds:string[]}，201 Staff：服务端固定创建 CLERK，拒绝 role 等未知字段；账号同品牌唯一，冲突409 ACCOUNT_CONFLICT。新建授权必须包含当前 storeId。
+ - PATCH /merchant/staff/:id {storeId,expectedRevision:number,name?:string,enabled?:boolean,storeIds?:string[]}，200 Staff。至少一项变更；只允许编辑同品牌 CLERK；目标必须当前授权包含 storeId，且其全部既有授权门店与新授权门店都在操作者当前集合内。OWNER、他品牌、存在不可管理门店的目标均403。账号创建后不通过此入口修改。
+ - POST /merchant/staff/:id/reset-password {storeId,expectedRevision:number,password:string}，201 Staff，同样 OWNER 及目标管理权限。密码重设只保存新随机盐的 scrypt 凭据。
+diff --git a/docs/tasks/catalog-admin-report.md b/docs/tasks/catalog-admin-report.md
+new file mode 100644
+index 0000000..3f133f9
+--- /dev/null
++++ b/docs/tasks/catalog-admin-report.md
+@@ -0,0 +1,67 @@
++# 分类与单位管理 Task 1 实施报告
++
++日期：2026-10-20。范围：已批准的单品牌多店目录设置数据库/API及订单规则；不包含 Task 2 UI。基线为77d813b之后协调器已提交的需求澄清；本实现不标记REQ030/031整项verified，不声称完整90项、微信、真机或生产验收完成。
++
++## 实现
++
++- 新增模块 `catalog-admin.controller.ts`、`catalog-admin.service.ts` 和共用 `catalog-policy.ts`；既有 POST `/merchant/categories` 已从 MerchantController 移出，无重复路由。商品与规格原路径保留。
++- GET `/merchant/catalog-settings` 返回 canManageBrand、分类、单位及已授权门店。分类按 sort、id 稳定排序；部分门店 OWNER/CLERK 可查询当前门店，门店名称和 visibleStoreIds 均过滤到操作者可访问范围，不能管理品牌时禁止写回。
++- 分类新增 enabled/revision/allStores 与 CategoryStoreVisibility。`visibleStoreIds=null` 表示全部本品牌当前和未来门店；数组完整替换显式集合，`[]` 表示全部隐藏；省略保留。名称、排序、布尔、版本、数组长度与跨品牌门店严格验证，未知字段及空修改拒绝。
++- 新增品牌 Unit（同品牌名称唯一、启停、revision）和 Product.unitId 可空关联。单位名称 trim 后1至20字；同名409 NAME_CONFLICT；已有商品引用时删除409 REFERENCE_CONFLICT。
++- 所有分类/单位写操作要求当前有效 OWNER 且拥有该品牌全部现存门店授权。权限、版本条件写入、映射和审计同一 Serializable 事务提交；不依赖事务外缓存身份。旧版本409 STATE_CONFLICT；并发同版本修改最多一方成功。新增门店后未取得其授权的原 OWNER 也不能修改品牌共享设置。
++- 商品 POST/PATCH 支持 unitId；仅传旧 unit 文本时解析已有有效单位，缺失400，不自动创建。拒绝选择其他品牌/停用单位；单位未变更时调用方必须省略 unit/unitId。只改名称、价格、库存不因已有单位停用而失败。商品响应 unit 优先读取关联名称，旧无关联记录读取原文本；单位改名不改订单/报价快照。
++- 商品新增/编辑及 SKU 修改均在事务内重新核查操作者当前身份与门店授权；分类/单位校验和商品保存、审计原子提交。商品 PATCH 支持 categoryId，改分类时校验品牌、启用及本店可见。
++- 公开菜单对分类和商品同时执行启用/本店可见过滤；quote/create 使用相同分类规则，停用或隐藏后的旧报价返回409 CATALOG_CHANGED并提示刷新。单位停用不会阻止已关联商品下单。已有订单的幂等读取、取消、现金、履约和库存释放保留；订单写事务也重新读取有效会话及授权。
++- CORS methods 增加 DELETE，保留既有 origins、认证和允许请求头规则。
++- API 合约已更新，明确字段、可见范围、权限、单位选择及错误码。旧 revision 使用 STATE_CONFLICT，与员工接口 VERSION_CONFLICT 区分，UI 应刷新确认，不能自动覆盖。
++
++## 迁移及种子
++
++迁移 `202610200006_catalog_settings` 使用 PostgreSQL 事务：分类默认 enabled=true、revision=0、allStores=true；按商品所属门店品牌与原单位文本精确去重创建 Unit、回填 unitId。保留所有 Product.unit 文本，包括首尾空格；不改商品、订单、报价、库存、会话，不去重或删除重复商品。新关系用外键保留引用完整性；分类可见映射随空分类删除清理。
++
++种子仅为新建体验商品关联单位，使用固定单位身份，并兼容从既有种子商品引用找到迁移生成的旧ID。重复运行不会把已改名/停用单位恢复为原名或另建一个原名单位；现有商品仍为 upsert update={}。既有 staff/source DB 测试的清理顺序仅在隔离测试库增加 Unit 清理，不放宽安全 guard。
++
++专项迁移测试先在独立 test_catalog_*_migration schema 执行旧5次迁移，插入重复商品、含空白单位、跨品牌同名单位、订单、报价、库存预占和会话，再运行第6次迁移。逐字段比较原商品（仅新增unitId）、订单/报价/SKU/会话，确认原文、重复记录和库存数值保留；同品牌原文相同复用单位、不同品牌不共用单位。
++
++## TDD与实际执行证据
++
++1. 首先添加 `tests/catalog-admin.test.ts`，在随机 test_catalog_* schema 执行原5次迁移并通过真实API访问设置接口。修正测试运行器缺少 TSX tsconfig 的启动配置后，观察到业务 RED：`settings endpoint exists`，实际404、预期200。随后实现数据库/API。
++2. 初轮 GREEN：真实PostgreSQL/API全流程通过。继续增加模块级guard与旧库迁移专项，3/3通过。
++3. 新增“默认单位改名/停用后重复seed不得重建原名单位”测试观察 RED：实际同名原单位计数1、预期0。修复种子身份复用后 GREEN；最终还把单位ID改为迁移式旧ID，覆盖该兼容分支。
++4. 既有 HTTP 回归首次发现店员创建缺少分类参数时返回400而原预期403。定位为 categoryId 参数校验移动到权限验证之前；恢复权限优先检查后，实际HTTP11/11通过。
++5. 临时回归运行器首次为 bootstrap 继承 DEV_SEED_ENABLED=true，生产模式校验正确拒绝；改为该套件false后4/4通过。source DB套件首次固定PUBLIC_BRAND_ID，使原多品牌未配置应503的断言得到200；移除该套件的公开品牌预设后1/1通过。这两项是运行器环境问题，未修改/弱化原测试断言或schema guard。
++6. 协调器提交前自查指出测试runner在CREATE SCHEMA失败时仍可能finally DROP同名现存schema。先添加真实碰撞测试：只对本轮创建的schema写入哨兵，子进程固定随机值碰撞该名称；修正测试自身空目录清理后，观察业务RED（schema计数0而预期1）。runner增加本轮CREATE成功标志与namespace OID/owner验证，失败保留原schema并关闭连接；最终碰撞测试证明原schema及哨兵值42保留，全部4/4 GREEN。
++
++最终执行结果（均真实执行，非仅编写）：
++
++| 命令/套件 | 结果 |
++| --- | --- |
++| `node .superpowers/sdd/catalog-runner.cjs` | 4 tests passed、0 failed；模块guard、创建碰撞保留、存量迁移、实际HTTP/DB目录流程。108处assert调用（含循环），没有把这些调用误称独立测试数 |
++| `node .superpowers/sdd/catalog-regressions.mjs` 的 staff-access.test.ts | 3 passed、0 failed |
++| `node .superpowers/sdd/catalog-regressions.mjs bootstrap-owner.test.ts integration.test.ts` 的 bootstrap-owner.test.ts（环境修正后） | 4 passed、0 failed |
++| `node .superpowers/sdd/catalog-regressions.mjs integration.test.ts`（环境修正后） | 1 passed、0 failed |
++| `node --import tsx --test apps/api/tests/domain.test.ts` | 9 passed、0 failed |
++| `node scripts/integration.mjs`（权限校验顺序修复并构建后） | 11 passed、0 failed；独立端口API与自动清理test_acceptance_* schema |
++| `node apps/api/node_modules/typescript/bin/tsc -p apps/api/tsconfig.json` | 构建通过 |
++| `node apps/api/node_modules/typescript/bin/tsc -p apps/api/tsconfig.json --noEmit` | 最终类型检查通过 |
++| `git diff --check` | 无空白错误；既有/协调器文件仅CRLF规范化提示 |
++
++目录实际API测试覆盖：分类排序/改名/启停/显式可见/空集合/恢复全部/未来门店，旧报价停用与隐藏拒绝，引用删除保护与空分类删除，Unit新建/trim/改名/禁用/同名冲突/引用保护/空单位删除，分类及单位同版本并发至多一方成功，并发同名单位只建一条，5轮单位引用创建/删除竞争无500，跨品牌目标/商品选择拒绝，CLERK/部分门店OWNER拒绝共享配置写入，受限查询不泄漏门店ID，旧版本失败无审计，旧/新会话均受撤权及停用约束，停用分类后已有订单取消/现金/接单/备好/完成，关联单位改名历史快照不变，停用单位旧商品报价可用，单独改名/价/库存可用，未知单位文本明确报错，旧无unitId记录可读，CORS真实DELETE预检204且允许DELETE。
++
++## 运行隔离与现存数据
++
++实现者仅在本轮创建的随机 test_catalog_* schema 测试和清理。runner仅在本轮CREATE成功且namespace OID/owner保持一致时清理；已有同名schema碰撞不会进入DROP，真实子进程哨兵测试覆盖。模块顶层在注册任何测试/创建数据库客户端前验证schema；另用不可达地址+development/public/缺省schema子进程证明安全拒绝发生在任何数据库连接前。
++
++协调器要求既有 staff/bootstrap 保持精确schema guard，因此另建本轮临时数据库，在其中使用 test_staff_access、test_bootstrap_owner、test_catalog_source。记录创建成功后的OID及owner，清理前再次确认身份且无连接，不终止未知进程。以下均已删除：
++
++- test_catalog_regression_f3fa066b5cadc7eb，OID35577、owner OID10。
++- test_catalog_regression_6f3f970bc5c6a59b，OID36220、owner OID10。
++- test_catalog_regression_3b8445534680df17，OID36862、owner OID10。
++
++实现者未重置或清理 development/public/既有备份恢复库。Prisma generate 先通知协调器；仅在协调器停止其拥有的API后执行一次成功，之后未再generate。协调器自行执行development第6次迁移、构建和恢复API3000，并独立报告：health database=connected，与已验证备份恢复库的5订单、3现金合计8380、stock14/reserved0及CMS仍一致。该源库核对证据由协调器掌握，本报告不替代其独立验收。
++
++## 自检与待后续
++
++已逐项核对任务简报，职责分离为控制器、管理服务与公用目录规则，未扩展 MerchantController 为设置管理文件；产品PATCH的解析结果在事务内复制，不把可变派生值带入Serializable重试。迁移在既有5次迁移之后可应用；旧单位文本兼容，无金额或订单快照格式变更。引用保护保留数据库外键；版本、关系及审计处于同一事务。
++
++本报告是实现者自检与执行证据，独立任务审查由协调器随后执行；不能把自检代替独立审查。Task 2 将提供 Web/商户H5界面及真实UI验收，目前未对新增目录管理宣称UI已验证。上线、微信环境与生产验收仍未进行。原有 Prisma package.json#prisma 弃用提示来自固定6.19运行配置，未升级依赖。

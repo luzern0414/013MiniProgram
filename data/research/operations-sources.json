@@ -1,0 +1,63 @@
+[
+  {
+    "id": "pg16-dump",
+    "url": "https://www.postgresql.org/docs/16/app-pgdump.html",
+    "category": "official-operations",
+    "retrieved_at": "2026-10-20T08:41:56.101390+00:00",
+    "status": 200,
+    "sha256": "512972d2bf8e54b493a3be50b62571c8175e03983f7812a85bb60136dc1faae2",
+    "final_url": "https://www.postgresql.org/docs/16/app-pgdump.html",
+    "error": null
+  },
+  {
+    "id": "pg16-restore",
+    "url": "https://www.postgresql.org/docs/16/app-pgrestore.html",
+    "category": "official-operations",
+    "retrieved_at": "2026-10-20T08:41:56.102036+00:00",
+    "status": 200,
+    "sha256": "9e37f1281e0b95a995d8a9d9daad1b2c71e1d05b2baf6b64ab82e044b8911e78",
+    "final_url": "https://www.postgresql.org/docs/16/app-pgrestore.html",
+    "error": null
+  },
+  {
+    "id": "pg16-passfile",
+    "url": "https://www.postgresql.org/docs/16/libpq-pgpass.html",
+    "category": "official-operations",
+    "retrieved_at": "2026-10-20T08:41:56.102439+00:00",
+    "status": 200,
+    "sha256": "2fcb5e8d7bb97e5390ca4fc0c6111ce866cb10fb9c805ab668ab87c811e633cd",
+    "final_url": "https://www.postgresql.org/docs/16/libpq-pgpass.html",
+    "error": null
+  },
+  {
+    "id": "pg-windows",
+    "url": "https://www.postgresql.org/download/windows/",
+    "category": "official-operations",
+    "retrieved_at": "2026-10-20T08:41:56.102834+00:00",
+    "status": 200,
+    "sha256": "e3cde64b0934ad154454c0dca709d55a40c5f21db958d1db5c31dae26e21d6db",
+    "final_url": "https://www.postgresql.org/download/windows/",
+    "error": null
+  },
+  {
+    "id": "edb-binaries",
+    "url": "https://www.enterprisedb.com/download-postgresql-binaries",
+    "category": "official-operations",
+    "retrieved_at": "2026-10-20T08:41:56.103264+00:00",
+    "status": 200,
+    "sha256": "71ac9746c3241a5c50a9fd146e260080b93054411740885511988fa7c5c31412",
+    "final_url": "https://www.enterprisedb.com/download-postgresql-binaries",
+    "error": null
+  },
+  {
+    "id": "edb-pg16-windows-binaries",
+    "category": "official-binary",
+    "url": "https://get.enterprisedb.com/postgresql/postgresql-16.15-5-windows-x64-binaries.zip",
+    "discoveredVia": "https://sbp.enterprisedb.com/getfile.jsp?fileid=1260623",
+    "status": 200,
+    "retrieved_at": "2026-10-20T08:51:53.806355+00:00",
+    "bytes": 373254386,
+    "sha256": "43bb45f173a6f08cf1d29a97a6d8deb119e8e8093a24c00d2d1001a0ccaa8281",
+    "verification": "官方HTTPS下载；sha256为本机下载校验记录，不是发布者独立签名。pg_dump/pg_restore --version实际16.15。仅提取客户端及DLL，未安装或启动第二个数据库。"
+  }
+]

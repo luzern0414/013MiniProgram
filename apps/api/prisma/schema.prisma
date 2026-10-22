@@ -1,0 +1,492 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Brand {
+  id           String     @id @default(cuid())
+  name         String
+  isExperience Boolean    @default(false)
+  stores       Store[]
+  users        User[]
+  categories   Category[]
+  units        Unit[]
+}
+
+model Store {
+  id             String        @id @default(cuid())
+  brandId        String
+  brand          Brand         @relation(fields: [brandId], references: [id])
+  name           String
+  address        String
+  phone          String
+  notice         String        @default("")
+  isOpen         Boolean       @default(true)
+  serviceModes   String[]      @default(["DINE_IN", "PICKUP", "DELIVERY"])
+  pickupMinutes  Int           @default(15)
+  deliveryFeeFen Int           @default(500)
+  minOrderFen    Int           @default(0)
+  themeColor     String        @default("#247D61")
+  staff          StaffStore[]
+  products       Product[]
+  tables         DiningTable[]
+  quotes         Quote[]
+  orders         Order[]
+  page           Page?
+  audit          Audit[]
+  categoryVisibility CategoryStoreVisibility[]
+  pickupPolicy PickupPolicy?
+  pickupSlots PickupSlot[]
+  pickupSequences PickupSequence[]
+  cashierDrafts CashierDraft[]
+  cashShifts CashShift[]
+}
+
+model User {
+  id         String       @id @default(cuid())
+  brandId    String
+  brand      Brand        @relation(fields: [brandId], references: [id])
+  name       String
+  phone      String?
+  role       String
+  devAccount String?      @unique
+  staffAccount String?
+  passwordHash String?
+  enabled    Boolean      @default(true)
+  revision   Int          @default(0)
+  balanceFen Int          @default(0)
+  points     Int          @default(0)
+  levelName  String       @default("普通会员")
+  staff      StaffStore[]
+  sessions   Session[]
+  quotes     Quote[]
+  orders     Order[]
+  createdDrafts CashierDraft[] @relation("DraftCreator")
+  updatedDrafts CashierDraft[] @relation("DraftEditor")
+  openedShifts CashShift[] @relation("ShiftOpener")
+  closedShifts CashShift[] @relation("ShiftCloser")
+  addressBook CustomerAddressBook?
+
+  @@unique([brandId, staffAccount])
+}
+
+model CustomerAddressBook {
+  userId String @id
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  revision Int @default(0)
+  updatedAt DateTime @default(dbgenerated("(now() AT TIME ZONE 'UTC')"))
+  addresses CustomerAddress[]
+  operations CustomerAddressOperation[]
+}
+
+model CustomerAddress {
+  id String @id @default(cuid())
+  userId String
+  book CustomerAddressBook @relation(fields: [userId], references: [userId], onDelete: Restrict)
+  revision Int @default(0)
+  name String
+  phone String
+  region String
+  detail String
+  point Json?
+  isDefault Boolean @default(false)
+  deletedAt DateTime?
+  createdAt DateTime @default(dbgenerated("(now() AT TIME ZONE 'UTC')"))
+  updatedAt DateTime @default(dbgenerated("(now() AT TIME ZONE 'UTC')"))
+  operations CustomerAddressOperation[]
+  @@index([userId, deletedAt, isDefault, updatedAt, id])
+}
+
+model CustomerAddressOperation {
+  id String @id @default(cuid())
+  userId String
+  book CustomerAddressBook @relation(fields: [userId], references: [userId], onDelete: Restrict)
+  key String
+  kind String
+  requestHash String
+  addressId String
+  address CustomerAddress @relation(fields: [addressId], references: [id], onDelete: Restrict)
+  resultAddressRevision Int
+  resultBookRevision Int
+  createdAt DateTime @default(dbgenerated("(now() AT TIME ZONE 'UTC')"))
+  @@unique([userId, key])
+  @@index([addressId])
+}
+
+model StaffStore {
+  userId  String
+  storeId String
+  user    User   @relation(fields: [userId], references: [id])
+  store   Store  @relation(fields: [storeId], references: [id])
+
+  @@id([userId, storeId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  brandId  String
+  brand    Brand     @relation(fields: [brandId], references: [id])
+  name     String
+  sort     Int       @default(0)
+  enabled  Boolean   @default(true)
+  revision Int       @default(0)
+  allStores Boolean  @default(true)
+  visibility CategoryStoreVisibility[]
+  products Product[]
+}
+
+model CategoryStoreVisibility {
+  categoryId String
+  storeId String
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  @@id([categoryId, storeId])
+  @@index([storeId])
+}
+
+model Unit {
+  id String @id @default(cuid())
+  brandId String
+  brand Brand @relation(fields: [brandId], references: [id])
+  name String
+  enabled Boolean @default(true)
+  revision Int @default(0)
+  products Product[]
+  @@unique([brandId, name])
+}
+
+model Product {
+  id          String     @id @default(cuid())
+  storeId     String
+  store       Store      @relation(fields: [storeId], references: [id])
+  categoryId  String
+  category    Category   @relation(fields: [categoryId], references: [id])
+  name        String
+  description String     @default("")
+  imageUrl    String?
+  unit        String     @default("份")
+  unitId      String?
+  unitDefinition Unit? @relation(fields: [unitId], references: [id], onDelete: Restrict)
+  isAvailable Boolean    @default(true)
+  configurationRevision Int @default(0)
+  specGroups ProductSpecGroup[]
+  attributeGroups ProductAttributeGroup[]
+  skus        Sku[]
+  modifiers   Modifier[]
+  @@index([unitId])
+}
+
+model Sku {
+  enabled Boolean @default(true)
+  combinationKey String?
+  selections SkuSpecSelection[]
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  priceFen  Int
+  stock     Int     @default(0)
+  reserved  Int     @default(0)
+  @@unique([productId, combinationKey])
+}
+
+model Modifier {
+  enabled Boolean @default(true)
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  priceFen  Int
+  stock     Int     @default(0)
+  reserved  Int     @default(0)
+}
+
+model DiningTable {
+  id       String @id @default(cuid())
+  storeId  String
+  store    Store  @relation(fields: [storeId], references: [id])
+  name     String
+  capacity Int
+  status   String @default("FREE")
+  code     String @unique
+}
+
+model Quote {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id])
+  snapshot  Json
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  order     Order?
+}
+
+model Order {
+  id                String       @id @default(cuid())
+  number            String       @unique
+  userId            String
+  user              User         @relation(fields: [userId], references: [id])
+  storeId           String
+  store             Store        @relation(fields: [storeId], references: [id])
+  quoteId           String       @unique
+  quote             Quote        @relation(fields: [quoteId], references: [id])
+  idempotencyKey    String
+  requestHash       String
+  mode              String
+  status            String       @default("PENDING_PAYMENT")
+  paymentStatus     String       @default("UNPAID")
+  refundStatus      String       @default("NONE")
+  subtotalFen       Int
+  deliveryFeeFen    Int
+  packagingFeeFen   Int
+  discountFen       Int
+  totalFen          Int
+  note              String       @default("")
+  tableName         String?
+  pickupNumber      String?
+  pickupServiceDate String?
+  pickupOrdinal     Int?
+  pickupWindow      Json?
+  pickupReservation PickupReservation?
+  storeName         String
+  address           Json?
+  lines             Json
+  inventoryReleased Boolean      @default(false)
+  createdAt         DateTime     @default(now())
+  paymentExpiresAt  DateTime     @default(dbgenerated("((now() AT TIME ZONE 'UTC') + '00:15:00'::interval)"))
+  events            OrderEvent[]
+  cash              CashPayment?
+  cashierDraft      CashierDraft?
+
+  @@unique([userId, idempotencyKey])
+  @@unique([storeId, pickupServiceDate, pickupOrdinal])
+  @@index([storeId, createdAt])
+}
+
+model CashierDraft {
+  id String @id @default(cuid())
+  storeId String
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  name String
+  selection Json
+  display Json
+  state String @default("DRAFT")
+  revision Int @default(0)
+  createdById String
+  createdBy User @relation("DraftCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedById String
+  updatedBy User @relation("DraftEditor", fields: [updatedById], references: [id], onDelete: Restrict)
+  createKey String
+  createHash String
+  orderId String? @unique
+  order Order? @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(dbgenerated("(now() AT TIME ZONE 'UTC')"))
+  updatedAt DateTime
+  @@unique([storeId, createKey])
+  @@index([storeId, state, updatedAt, id])
+}
+
+model OrderEvent {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  status    String
+  label     String
+  createdAt DateTime @default(now())
+}
+
+model CashPayment {
+  id          String   @id @default(cuid())
+  orderId     String   @unique
+  order       Order    @relation(fields: [orderId], references: [id])
+  staffId     String
+  amountFen   Int
+  tenderedFen Int
+  changeFen   Int
+  refundedFen Int      @default(0)
+  createdAt   DateTime @default(now())
+  refunds     CashRefund[]
+  shiftId     String?
+  shift       CashShift? @relation(fields: [shiftId], references: [id], onDelete: Restrict)
+  @@index([shiftId])
+}
+
+model CashRefund {
+  id             String      @id @default(cuid())
+  paymentId      String
+  payment        CashPayment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  staffId        String
+  amountFen      Int
+  reason         String
+  createdAt      DateTime    @default(dbgenerated("(now() AT TIME ZONE 'UTC')"))
+  idempotencyKey String
+  requestHash    String
+  shiftId        String?
+  shift          CashShift? @relation(fields: [shiftId], references: [id], onDelete: Restrict)
+
+  @@unique([paymentId, idempotencyKey])
+  @@index([paymentId, createdAt, id])
+  @@index([createdAt])
+  @@index([shiftId])
+}
+
+model CashShift {
+  id String @id @default(cuid())
+  storeId String
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  state String @default("OPEN")
+  revision Int @default(0)
+  openingFen BigInt
+  openedById String
+  openedBy User @relation("ShiftOpener", fields: [openedById], references: [id], onDelete: Restrict)
+  openedAt DateTime @default(dbgenerated("(now() AT TIME ZONE 'UTC')"))
+  createKey String
+  createHash String
+  closedById String?
+  closedBy User? @relation("ShiftCloser", fields: [closedById], references: [id], onDelete: Restrict)
+  closedAt DateTime?
+  closeKey String?
+  closeHash String?
+  paymentCount BigInt?
+  refundCount BigInt?
+  paidFen BigInt?
+  refundFen BigInt?
+  netFen BigInt?
+  expectedFen BigInt?
+  countedFen BigInt?
+  differenceFen BigInt?
+  reason String?
+  payments CashPayment[]
+  refunds CashRefund[]
+  @@unique([storeId, createKey])
+  @@unique([storeId, closeKey])
+  @@index([storeId, state, openedAt, id])
+}
+
+model Audit {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id])
+  actorId   String
+  action    String
+  entityId  String
+  before    Json?
+  after     Json?
+  createdAt DateTime @default(now())
+}
+
+model Page {
+  storeId   String @id
+  store     Store  @relation(fields: [storeId], references: [id])
+  draft     Json
+  published Json
+  version   Int    @default(0)
+}
+
+model PickupPolicy {
+ storeId String @id
+ store Store @relation(fields:[storeId], references:[id], onDelete:Restrict)
+ enabled Boolean @default(false)
+ revision Int @default(0)
+ timezone String @default("Asia/Shanghai")
+ leadMinutes Int @default(15)
+ maxAdvanceDays Int @default(14)
+}
+model PickupSlot {
+ id String @id @default(cuid())
+ storeId String
+ store Store @relation(fields:[storeId], references:[id], onDelete:Restrict)
+ startsAt DateTime
+ endsAt DateTime
+ capacity Int
+ heldCount Int @default(0)
+ confirmedCount Int @default(0)
+ enabled Boolean @default(true)
+ revision Int @default(0)
+ reservations PickupReservation[]
+ @@index([storeId,startsAt])
+}
+model PickupReservation {
+ orderId String @id
+ order Order @relation(fields:[orderId], references:[id], onDelete:Restrict)
+ slotId String
+ slot PickupSlot @relation(fields:[slotId], references:[id], onDelete:Restrict)
+ state String
+ @@index([slotId])
+}
+model PickupSequence {
+ storeId String
+ store Store @relation(fields:[storeId], references:[id], onDelete:Restrict)
+ serviceDate String
+ lastNumber Int
+ @@id([storeId,serviceDate])
+}
+
+model ProductSpecGroup {
+ id String @id @default(cuid())
+ productId String
+ product Product @relation(fields:[productId], references:[id], onDelete: Restrict)
+ name String
+ sort Int @default(0)
+ enabled Boolean @default(true)
+ values ProductSpecValue[]
+ selections SkuSpecSelection[]
+ @@index([productId])
+}
+model ProductSpecValue {
+ id String @id @default(cuid())
+ groupId String
+ group ProductSpecGroup @relation(fields:[groupId], references:[id], onDelete: Restrict)
+ name String
+ sort Int @default(0)
+ enabled Boolean @default(true)
+ selections SkuSpecSelection[]
+ @@unique([id, groupId])
+ @@index([groupId])
+}
+model SkuSpecSelection {
+ skuId String
+ groupId String
+ valueId String
+ sku Sku @relation(fields:[skuId], references:[id], onDelete: Restrict)
+ group ProductSpecGroup @relation(fields:[groupId], references:[id], onDelete: Restrict)
+ value ProductSpecValue @relation(fields:[valueId,groupId], references:[id,groupId], onDelete: Restrict)
+ @@id([skuId,groupId])
+ @@index([valueId,groupId])
+}
+model ProductAttributeGroup {
+ id String @id @default(cuid())
+ productId String
+ product Product @relation(fields:[productId], references:[id], onDelete: Restrict)
+ name String
+ sort Int @default(0)
+ enabled Boolean @default(true)
+ minSelections Int @default(0)
+ maxSelections Int @default(1)
+ options ProductAttributeOption[]
+ @@index([productId])
+}
+model ProductAttributeOption {
+ id String @id @default(cuid())
+ groupId String
+ group ProductAttributeGroup @relation(fields:[groupId], references:[id], onDelete: Restrict)
+ name String
+ sort Int @default(0)
+ enabled Boolean @default(true)
+ @@index([groupId])
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "localPath": ".firecrawl/prisma-raw-lock-sqlstate.json",
+    "endpoint": "https://api.firecrawl.dev/v2/search/developer",
+    "query": "Prisma PostgreSQL queryRaw SELECT FOR UPDATE P2010 40001 could not serialize access due to concurrent update",
+    "sha256": "3a7454713370e24f8081a1c3ab00a08b259204c7d1770c486e3c5979f555d911",
+    "scope": "developer index passages only; broad results not version-specific proof",
+    "id": "prisma-lock-broad",
+    "reuse": "concepts and regression scenarios only; no upstream code copied",
+    "readDate": "2026-10-20"
+  },
+  {
+    "localPath": ".firecrawl/prisma-raw-lock-focused.json",
+    "endpoint": "https://api.firecrawl.dev/v2/search/developer",
+    "query": "P2010 40001; repo prisma/prisma",
+    "sha256": "f0defe28f5f6ef73521b73980895f5348662bf61396375653b5b353486a769ef",
+    "scope": "developer index; only hit has no passages; excluded as root-cause proof",
+    "id": "prisma-lock-focused",
+    "reuse": "concepts and regression scenarios only; no upstream code copied",
+    "readDate": "2026-10-20"
+  },
+  {
+    "localPath": ".firecrawl/pos-cash-closing-followup.json",
+    "endpoint": "https://api.firecrawl.dev/v2/search/developer",
+    "query": "ERPNext POS Closing Entry expected amount cash opening refunds change amount closing snapshot",
+    "sha256": "54be522fa072cec00fd5ecfbdfc5794b258401696e55b544c4c48bb845969640",
+    "scope": "developer index passages only; historical issue and PR evidence",
+    "id": "pos-cash-closing-broad",
+    "reuse": "concepts and regression scenarios only; no upstream code copied",
+    "readDate": "2026-10-20"
+  },
+  {
+    "localPath": ".firecrawl/pos-closing-pr59514.json",
+    "endpoint": "https://api.firecrawl.dev/v2/search/developer",
+    "query": "59514 closing change; repo frappe/erpnext",
+    "sha256": "467fb3e284fcb73d65b9365815b18aff011c4c4ee1de2786bc997804333344a1",
+    "scope": "developer index truncated passages only; full scrape rate-limited; merge/release not verified",
+    "id": "pos-cash-closing-59514",
+    "reuse": "concepts and regression scenarios only; no upstream code copied",
+    "readDate": "2026-10-20"
+  }
+]

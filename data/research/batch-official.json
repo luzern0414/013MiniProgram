@@ -1,0 +1,98 @@
+[
+  {
+    "identifier": "pay-mini-create",
+    "url": "https://pay.weixin.qq.com/doc/v3/merchant/4012791896",
+    "title": "微信支付 JSAPI/小程序下单",
+    "category": "wechat-official"
+  },
+  {
+    "identifier": "pay-mini-invoke",
+    "url": "https://pay.weixin.qq.com/doc/v3/merchant/4012791898",
+    "title": "小程序调起支付",
+    "category": "wechat-official"
+  },
+  {
+    "identifier": "pay-notify",
+    "url": "https://pay.weixin.qq.com/doc/v3/merchant/4012791861",
+    "title": "支付成功回调通知",
+    "category": "wechat-official"
+  },
+  {
+    "identifier": "pay-refund",
+    "url": "https://pay.weixin.qq.com/doc/v3/merchant/4012791862",
+    "title": "退款申请",
+    "category": "wechat-official"
+  },
+  {
+    "identifier": "pay-refund-notify",
+    "url": "https://pay.weixin.qq.com/doc/v3/merchant/4012791865",
+    "title": "退款结果回调通知",
+    "category": "wechat-official"
+  },
+  {
+    "identifier": "pay-signature",
+    "url": "https://pay.weixin.qq.com/doc/v3/merchant/4012365342",
+    "title": "微信支付签名认证",
+    "category": "wechat-official"
+  },
+  {
+    "identifier": "pay-mini-prepare",
+    "url": "https://pay.weixin.qq.com/doc/v3/merchant/4015459512",
+    "title": "小程序支付接入准备",
+    "category": "wechat-official"
+  },
+  {
+    "identifier": "wx-qrcode-current",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/server/API/qrcode-link/qr-code/api_getunlimitedqrcode.html",
+    "title": "获取不限制的小程序码",
+    "category": "wechat-official"
+  },
+  {
+    "identifier": "wx-rules-current",
+    "url": "https://developers.weixin.qq.com/miniprogram/product/",
+    "title": "微信小程序产品指南",
+    "category": "wechat-official"
+  },
+  {
+    "identifier": "feie-docs",
+    "url": "https://help.feieyun.com/",
+    "title": "飞鹅云 API 文档",
+    "category": "industry"
+  },
+  {
+    "identifier": "youzan-official",
+    "url": "https://www.youzan.com/",
+    "title": "有赞产品官网",
+    "category": "industry"
+  },
+  {
+    "identifier": "commit-guchengwuyue--yshop-drink",
+    "url": "https://api.github.com/repos/guchengwuyue/yshop-drink/commits/master",
+    "title": "guchengwuyue/yshop-drink research revision",
+    "category": "github-revision"
+  },
+  {
+    "identifier": "commit-linlinjava--litemall",
+    "url": "https://api.github.com/repos/linlinjava/litemall/commits/master",
+    "title": "linlinjava/litemall research revision",
+    "category": "github-revision"
+  },
+  {
+    "identifier": "commit-cocktail18--bee-api",
+    "url": "https://api.github.com/repos/cocktail18/bee-api/commits/main",
+    "title": "cocktail18/bee-api research revision",
+    "category": "github-revision"
+  },
+  {
+    "identifier": "commit-woniudiancang--bee",
+    "url": "https://api.github.com/repos/woniudiancang/bee/commits/master",
+    "title": "woniudiancang/bee research revision",
+    "category": "github-revision"
+  },
+  {
+    "identifier": "commit-feige996--unibest",
+    "url": "https://api.github.com/repos/feige996/unibest/commits/base",
+    "title": "feige996/unibest research revision",
+    "category": "github-revision"
+  }
+]

@@ -1,0 +1,69 @@
+# 现金班次与交班实施计划
+
+> REQUIRED SUB-SKILL: subagent-driven-development。挂取单Task3及root跨端验收收尾后才派发，同时一个实现者；每任务提交后独立审查。此文件是准备计划，不表示已实施。
+
+**Goal:** 显式现金班次归属、准确应有/实点/差额、版本化关班和跨端恢复，推进REQ-087/090。其他渠道和应收另行实现，不能把现金子集标完整REQ-090已验。
+
+**Architecture:** 每店一个共享OPEN班次；新现金收退款在原事务中锁班次、归属凭证、递增revision；闭班保存不可变快照。旧凭证保留nullable shiftId且不按时间猜填。独立模块及shared控制器，复用原权限/订单/现金及退款恢复。
+
+**Tech Stack:** 现有NestJS11/Prisma6.19/PostgreSQL16、Vue3、uni-app、mini-core，不升级依赖。细节见[设计](../specs/2026-10-21-cash-shifts-design.md)、[来源与回归依据](../../research/2026-10-20-cashier-drafts-shifts.md)。
+
+## Global Constraints
+
+- 保留development/public全部已有商品、订单、现金、退款、库存、草稿和会话，不删库重置；迁移必须可作用于现存数据，旧金额/时间/操作者/快照不可改写。
+- 正式业务数据全部通过后端读写数据库；不得伪造成功，不能用关班差额修改历史订单或生成虚假收退款。
+- 所有界面文字原则上不得小于14px，提交禁重，失败提示清晰，保留requestId。
+- 店主开班/关班/退款，本店有效OWNER/CLERK可读班次及收款；顾客、跨店、跨品牌、停用或撤权身份拒绝；每个写事务重验权限。
+- 每门店最多一个OPEN；新现金收退款须归属活动班次，已关闭不得新增凭证，旧幂等重放不改原班次、不增加revision或审计。
+- 当班应有=期初+sum(amountFen收款)-sum(amountFen退款)，不能用tenderedFen或重复扣changeFen；跨班退款归实际退款班次，旧shiftId=null保持。
+- 开班/关班未知结果持久保留原key/载荷，GET失败或401/403不能解锁；不得自动开下一班或自动确认现金。
+- 当前没有AppID/支付/域名/服务器资源，继续本地验收，不声称真机或生产已验证。
+
+## 固定合约
+
+```text
+GET /merchant/cash-shifts?storeId=&state=OPEN|CLOSED|ALL&page=1&pageSize=20
+    -> {items:ShiftView[],total,page,pageSize}
+GET /merchant/cash-shifts/current?storeId= -> {shift:ShiftView|null}
+GET /merchant/cash-shifts/:id?storeId= -> ShiftView
+POST /merchant/cash-shifts {storeId,openingFen}, Idempotency-Key -> ShiftView
+POST /merchant/cash-shifts/:id/close
+    {storeId,expectedRevision,countedFen,reason}, Idempotency-Key -> ShiftView
+```
+
+列表query严格白名单，state默认ALL，page正整数、pageSize1..50。标识符非空字符串最多200；幂等key非空最多120；数值不接受字符串或数组。期初/实点0..2000000000整数分；revision0..2000000000，计数/版本溢出须明确失败，不溢出数据库字段；非零差额reason trim后1..500字、零差额可空。所有写未知字段拒绝，包括shiftId/status/操作者/时间及客户端汇总金额。
+
+```ts
+type ShiftView = {
+ id:string; storeId:string; state:'OPEN'|'CLOSED'; revision:number;
+ openingFen:number; openedBy:{id:string;name:string}; openedAt:string;
+ closedBy:{id:string;name:string}|null; closedAt:string|null;
+ summary:{paymentCount:number;refundCount:number;paidFen:number;refundFen:number;
+   netFen:number;expectedFen:number;countedFen:number|null;differenceFen:number|null;reason:string|null};
+};
+```
+
+不返回幂等key/hash、登录账号或凭据。汇总用安全整数分，金额数据库BIGINT，JS序列化前检查范围；OPEN的counted/difference/reason为null，CLOSED读已存快照。错误代码：SHIFT_REQUIRED（无活动班收退款409）、SHIFT_ALREADY_OPEN409、SHIFT_CHANGED409（状态/版本变化，GET再明确确认）、SHIFT_TOTAL_TOO_LARGE409（汇总超安全整数）、IDEMPOTENCY_CONFLICT409；普通参数400、权限403、未登录401、缺失404继续现有合约。成功幂等重放返回原班次当前事实，接口状态沿Nest原POST201；不可伪称再次开/关。
+
+## Task 1: API、班次归属及增量迁移
+
+**Files:** 新建apps/api/src/modules/finance/cash-shifts.service.ts、cash-shifts.controller.ts、cash-shifts.validation.ts、cash-shift-ledger.ts（事务级锁/归属/汇总），修改prisma/schema.prisma、下一序号增量迁移、app.module.ts、orders/orders.service.ts、finance/cash-refunds.service.ts；HTTP/迁移/并发专项夹具及原受影响fixtures。报告docs/tasks/cash-shifts-api-report.md。不将整套交班塞OrdersService。
+
+- [ ] **1. RED和夹具。** 独立随机数据库/受限schema，创建真实brand/store/owner/clerk/customer及另一店权限夹具。源库拒绝门禁贯穿所有子进程，CREATE碰撞不能DROP非自有库。先写HTTP断言：无班新收款/退款409且财务/库存不变；店主0期开班；店员读可、开关禁；同店两开只一成功；同key同载荷1班1审计，异载荷409；跨店/顾客/撤权重放拒绝。记录真实RED命令/输出。
+- [ ] **2. 模型和迁移。** 新CashShift及关系/检查/索引；OPEN条件唯一约束，state/关班字段一致、期初实点范围、revision非负。CashPayment/Refund各添nullable shiftId及RESTRICT，不能回填旧凭证。时间采用项目UTC显式默认。fixture保留迁移前全部旧列原始timestamp文本，对照默认null、FK删除限制、部分唯一、错误状态拒绝；前后旧原列含时间完全相同。generate先请求root精确停自有API，不擅自停服务或源迁移。
+- [ ] **3. 幂等/读/开关。** 写前校验严格白名单，事务内授权、规范化摘要；同key检查在副作用之前。列表数据库过滤排序分页并返回total，详情OPEN一致聚合/CLOSED固定快照。close锁指定班次后核对原key，再expectedRevision及OPEN，重算真实金额，写快照/状态/revision/审计原子完成。差额非0须原因，不生成金额调整。大汇总/版本溢出明确拒绝并回滚。
+- [ ] **4. 集成原金融事务。** 原现金重放在授权后沿原单返回；新现金必须锁活动班次后才结算库存、写带shiftId的CashPayment、递增revision。退款按本次活动班次挂CashRefund，与payment.refundedFen/事件/审计同事务，不改原收款shiftId。两处锁顺序一致；重放不要求当前OPEN，不附加审计。raw锁只将P2010/meta40001或40P01转成现有有界事务重试，覆盖实际可复现SQLSTATE，未强制触发的不得声称通过。
+- [ ] **5. GREEN与交付。** 实际HTTP专项源码/编译两种执行：收6160/交7000/找840，应有只加6160；同班退款减少一次；关闭后原付款重放不重归，新退款归第二班；历史null凭证退款归新班；两设备不同closekey只一次关班，旧版本409保留事实；关闭和收款/退款竞争只能合法序列且闭班无迟到流水。日统计按发生日与班次快照各自正确。用真实日期边界隔离夹具，不改源浏览器时钟。原domain、cash/refund/pickup/options/drafts相关HTTP和tsc，更新受影响fixture显式开班且不削弱旧断言。追加HTTP/原列保留/约束/审计/限制报告，自审显式提交。
+
+**Root gate:** 独立Approved后，运行fresh原列基线/新备份/实际新库恢复/原列含时间对照；只部署下一迁移，重读旧金融null归属及原业务全保留，恢复API健康。未通过不得开始源金融写入。源码夹具不代替源迁移或真实UI。
+
+
+## 派发与集成边界
+
+此brief只在root明确派发后执行，当前挂单Task3仍在实施。已批准总体方案与本细化设计授权本地交班能力；当前不添加外部服务。首先读取D:/Codes/开发规范.txt与本计划关联设计，遵循TDD/verification-before-completion，异常用systematic-debugging，不派子代理。真实source当前数字只能作为读时点，root在迁移前取fresh基线；不要reset/seed或用SQL写正式业务来方便测试。
+
+源API启动、停止、Prisma generate和迁移由root协调。需要generate时先发出具体请求，等root验证自有PID/命令并停API后才运行；独立review Approved前不允许源迁移。完成API任务后root负责新备份/新库真实恢复/原列时间对照/增量迁移/健康检查，再派发Web任务。
+
+受影响原HTTP夹具应在自己的随机隔离库显式开班以保持原收款/退款断言；不得删除旧幂等/权限/预占/容量/草稿并发用例，不能让历史null凭证重放被SHIFT_REQUIRED挡掉。新CashPayment/Refund外键和partial唯一约束必须实际SQL验证，不只看Prisma类型或测试模拟。任何临时随机库清理前核对ownership，CREATE碰撞不能DROP已有对象。source及保留restore数据库、备份均不得删除。
+
+显式暂存本人API/schema/迁移/必要受影响隔离fixtures及docs/tasks/cash-shifts-api-report.md，不暂存root README/config/需求台账/验收或两个旧catalog review diff。标准身份Codex/codex@local.invalid，报告含真实RED/GREEN、源码及编译HTTP、约束/迁移原列、并发排序与实际触发SQLSTATE、兼容和未验限制。返回DONE或具体concerns、提交、一行测试和报告路径；不得把API测试当完整交班或真机验收。

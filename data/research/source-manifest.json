@@ -1,0 +1,1362 @@
+[
+  {
+    "id": "code-cocktail18--bee-api-coupon-go",
+    "title": "cocktail18/bee-api :: bee-api/service/coupon.go",
+    "url": "https://raw.githubusercontent.com/cocktail18/bee-api/e75d2973eb2ad551c8e03bee101a8a9ef625de42/bee-api/service/coupon.go",
+    "category": "github-code",
+    "status": 200,
+    "retrieved_at": "2026-10-20T07:01:44.944000+00:00",
+    "sha256": "6bb9ce4281dd6292d3b766a749a08871744d19adfaf6ba477ff6b33e8e35f0b2",
+    "error": null
+  },
+  {
+    "id": "code-cocktail18--bee-api-order-go",
+    "title": "cocktail18/bee-api :: bee-api/service/order.go",
+    "url": "https://raw.githubusercontent.com/cocktail18/bee-api/e75d2973eb2ad551c8e03bee101a8a9ef625de42/bee-api/service/order.go",
+    "category": "github-code",
+    "status": 200,
+    "retrieved_at": "2026-10-20T07:01:44.220238+00:00",
+    "sha256": "8f8ecec161f438e3e9e3a8412997792ba1ca80348dca2414d3e9e6615252a885",
+    "error": null
+  },
+  {
+    "id": "code-cocktail18--bee-api-order_test-go",
+    "title": "cocktail18/bee-api :: bee-api/service/order_test.go",
+    "url": "https://raw.githubusercontent.com/cocktail18/bee-api/e75d2973eb2ad551c8e03bee101a8a9ef625de42/bee-api/service/order_test.go",
+    "category": "github-code",
+    "status": 200,
+    "retrieved_at": "2026-10-20T07:01:45.321656+00:00",
+    "sha256": "07ba69273369c575959f81ee0965dd834015aa23721b3cc167a57e915da2d7dc",
+    "error": null
+  },
+  {
+    "id": "code-cocktail18--bee-api-pay-go",
+    "title": "cocktail18/bee-api :: bee-api/service/pay.go",
+    "url": "https://raw.githubusercontent.com/cocktail18/bee-api/e75d2973eb2ad551c8e03bee101a8a9ef625de42/bee-api/service/pay.go",
+    "category": "github-code",
+    "status": 200,
+    "retrieved_at": "2026-10-20T07:01:45.309486+00:00",
+    "sha256": "f49f6e6a8b73870dc427f581cdb704a79df7f3d8426639efa24ba678f6943a6d",
+    "error": null
+  },
+  {
+    "id": "code-guchengwuyue--yshop-drink-AppCouponServiceImpl-java",
+    "title": "guchengwuyue/yshop-drink :: yshop-drink-boot3/yshop-module-marketing/yshop-module-coupon-biz/src/main/java/co/yixiang/yshop/module/coupon/service/coupon/AppCouponServiceImpl.java",
+    "url": "https://raw.githubusercontent.com/guchengwuyue/yshop-drink/42f416022f5d7b51b7a581976638b1895e20407d/yshop-drink-boot3/yshop-module-marketing/yshop-module-coupon-biz/src/main/java/co/yixiang/yshop/module/coupon/service/coupon/AppCouponServiceImpl.java",
+    "category": "github-code",
+    "status": 200,
+    "retrieved_at": "2026-10-20T07:01:43.368940+00:00",
+    "sha256": "2596f714253bb877a80f57f35d7ed4e2497aad458c55cec4730afba92247c689",
+    "error": null
+  },
+  {
+    "id": "code-guchengwuyue--yshop-drink-AppStoreOrderServiceImpl-java",
+    "title": "guchengwuyue/yshop-drink :: yshop-drink-boot3/yshop-module-mall/yshop-module-order-biz/src/main/java/co/yixiang/yshop/module/order/service/storeorder/AppStoreOrderServiceImpl.java",
+    "url": "https://raw.githubusercontent.com/guchengwuyue/yshop-drink/42f416022f5d7b51b7a581976638b1895e20407d/yshop-drink-boot3/yshop-module-mall/yshop-module-order-biz/src/main/java/co/yixiang/yshop/module/order/service/storeorder/AppStoreOrderServiceImpl.java",
+    "category": "github-code",
+    "status": 200,
+    "retrieved_at": "2026-10-20T07:01:43.367821+00:00",
+    "sha256": "2622e2b7a231a8f72893523cff31c88f1a11c8dd65a7a39f643b68bd4958192d",
+    "error": null
+  },
+  {
+    "id": "code-guchengwuyue--yshop-drink-StoreOrderServiceImpl-java",
+    "title": "guchengwuyue/yshop-drink :: yshop-drink-boot3/yshop-module-mall/yshop-module-order-biz/src/main/java/co/yixiang/yshop/module/order/service/storeorder/StoreOrderServiceImpl.java",
+    "url": "https://raw.githubusercontent.com/guchengwuyue/yshop-drink/42f416022f5d7b51b7a581976638b1895e20407d/yshop-drink-boot3/yshop-module-mall/yshop-module-order-biz/src/main/java/co/yixiang/yshop/module/order/service/storeorder/StoreOrderServiceImpl.java",
+    "category": "github-code",
+    "status": 200,
+    "retrieved_at": "2026-10-20T07:01:43.368210+00:00",
+    "sha256": "52d5711d15fe1a7a00ff7f2bdfa2ecb4a7c5058ca877b3840c9d4f08cefb044d",
+    "error": null
+  },
+  {
+    "id": "code-guchengwuyue--yshop-drink-StoreShopServiceImpl-java",
+    "title": "guchengwuyue/yshop-drink :: yshop-drink-boot3/yshop-module-mall/yshop-module-store-biz/src/main/java/co/yixiang/yshop/module/store/service/storeshop/StoreShopServiceImpl.java",
+    "url": "https://raw.githubusercontent.com/guchengwuyue/yshop-drink/42f416022f5d7b51b7a581976638b1895e20407d/yshop-drink-boot3/yshop-module-mall/yshop-module-store-biz/src/main/java/co/yixiang/yshop/module/store/service/storeshop/StoreShopServiceImpl.java",
+    "category": "github-code",
+    "status": 200,
+    "retrieved_at": "2026-10-20T07:01:43.369175+00:00",
+    "sha256": "627401f31582b93723fb57d3bc13ce6efa5b09cfbf7827d7c6d23669e7bffc1c",
+    "error": null
+  },
+  {
+    "id": "code-linlinjava--litemall-GoodsProductMapper-xml",
+    "title": "linlinjava/litemall :: litemall-db/src/main/resources/org/linlinjava/litemall/db/dao/GoodsProductMapper.xml",
+    "url": "https://raw.githubusercontent.com/linlinjava/litemall/a1ef964a718b7277925b19ea26afe78ea3a1d325/litemall-db/src/main/resources/org/linlinjava/litemall/db/dao/GoodsProductMapper.xml",
+    "category": "github-code",
+    "status": 200,
+    "retrieved_at": "2026-10-20T07:01:44.155216+00:00",
+    "sha256": "f673bdae71e041ec5231bf00af710386176733afcc4ff64ddb06025a8273dc84",
+    "error": null
+  },
+  {
+    "id": "code-linlinjava--litemall-OrderUtil-java",
+    "title": "linlinjava/litemall :: litemall-db/src/main/java/org/linlinjava/litemall/db/util/OrderUtil.java",
+    "url": "https://raw.githubusercontent.com/linlinjava/litemall/a1ef964a718b7277925b19ea26afe78ea3a1d325/litemall-db/src/main/java/org/linlinjava/litemall/db/util/OrderUtil.java",
+    "category": "github-code",
+    "status": 200,
+    "retrieved_at": "2026-10-20T07:01:43.472279+00:00",
+    "sha256": "5a8124747861b99184762d0d0f15aae9edb955628c2bb068a406c7692dab91f0",
+    "error": null
+  },
+  {
+    "id": "code-linlinjava--litemall-WxOrderService-java",
+    "title": "linlinjava/litemall :: litemall-wx-api/src/main/java/org/linlinjava/litemall/wx/service/WxOrderService.java",
+    "url": "https://raw.githubusercontent.com/linlinjava/litemall/a1ef964a718b7277925b19ea26afe78ea3a1d325/litemall-wx-api/src/main/java/org/linlinjava/litemall/wx/service/WxOrderService.java",
+    "category": "github-code",
+    "status": 200,
+    "retrieved_at": "2026-10-20T07:01:43.369702+00:00",
+    "sha256": "06f57be16998dfc2695a2e7e98b7cd62a99c44af28b13908d4b739852bda3ca9",
+    "error": null
+  },
+  {
+    "id": "code-woniudiancang--bee-order-js",
+    "title": "woniudiancang/bee :: pages/cart/order.js",
+    "url": "https://raw.githubusercontent.com/woniudiancang/bee/edb27edd56fbc5d1d2a31aa408b250ff5f38ab20/pages/cart/order.js",
+    "category": "github-code",
+    "status": 200,
+    "retrieved_at": "2026-10-20T07:01:45.669944+00:00",
+    "sha256": "2960381cb8eef20ffce8bded229a61eabc52bebb787afec400e83b6e6d15f2a6",
+    "error": null
+  },
+  {
+    "id": "commit-cocktail18--bee-api",
+    "title": "cocktail18/bee-api research revision",
+    "url": "https://api.github.com/repos/cocktail18/bee-api/commits/main",
+    "category": "github-revision",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:59:03.402892+00:00",
+    "sha256": "703196e038295975d569d852f091627f42eed1ec106e873c4d03d02c6d7e0a97",
+    "error": null
+  },
+  {
+    "id": "commit-feige996--unibest",
+    "title": "feige996/unibest research revision",
+    "url": "https://api.github.com/repos/feige996/unibest/commits/base",
+    "category": "github-revision",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:59:04.059391+00:00",
+    "sha256": "f05b8348d550d999f2daad45bdb41575894ce22e89a520f422a2d79228907729",
+    "error": null
+  },
+  {
+    "id": "commit-guchengwuyue--yshop-drink",
+    "title": "guchengwuyue/yshop-drink research revision",
+    "url": "https://api.github.com/repos/guchengwuyue/yshop-drink/commits/master",
+    "category": "github-revision",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:59:03.070042+00:00",
+    "sha256": "5a98f7c8ecea61894fb7d7f0be381b4634ecd9f804be3c80a05722adcfeb9365",
+    "error": null
+  },
+  {
+    "id": "commit-linlinjava--litemall",
+    "title": "linlinjava/litemall research revision",
+    "url": "https://api.github.com/repos/linlinjava/litemall/commits/master",
+    "category": "github-revision",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:59:03.271859+00:00",
+    "sha256": "dd7cd877277b3e4a91ba213168cc4833e73a46a1c5f7293137ca28c333ead270",
+    "error": null
+  },
+  {
+    "id": "commit-woniudiancang--bee",
+    "title": "woniudiancang/bee research revision",
+    "url": "https://api.github.com/repos/woniudiancang/bee/commits/master",
+    "category": "github-revision",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:59:03.902879+00:00",
+    "sha256": "0c69c1033324181f465ad322e52754b6ae21c9b488b273aef0903fe34a934043",
+    "error": null
+  },
+  {
+    "id": "dada-open",
+    "title": "达达开放平台",
+    "url": "https://newopen.imdada.cn/",
+    "category": "technical-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:52:08.803820+00:00",
+    "sha256": "10041efedfe4c0a124c308d71b8ed94fd163175c8cad4138d69edc65c633921a",
+    "error": null
+  },
+  {
+    "id": "feie-docs",
+    "title": "飞鹅云 API 文档",
+    "url": "https://help.feieyun.com/",
+    "category": "industry",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:58:57.028785+00:00",
+    "sha256": "51717a81e920135a906ecef93654fe2a6d598ed814061ddf4e06447028c65097",
+    "error": null
+  },
+  {
+    "id": "feie-open",
+    "title": "飞鹅云打印开放平台",
+    "url": "https://www.feieyun.com/open/index.html",
+    "category": "technical-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:26.145478+00:00",
+    "sha256": "868d39b015088f875d1381348f71f663b2eea51c6ae628592098c23b161b86ba",
+    "error": null
+  },
+  {
+    "id": "keruyun",
+    "title": "客如云 餐饮经营",
+    "url": "https://www.keruyun.com/",
+    "category": "industry",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:52:08.360784+00:00",
+    "sha256": "748c495d5d941acc13384d46c4ed030cd589808feba0c3bc30caf9868d2800fd",
+    "error": null
+  },
+  {
+    "id": "license-cocktail18--bee-api",
+    "title": "cocktail18/bee-api LICENSE",
+    "url": "https://raw.githubusercontent.com/cocktail18/bee-api/main/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:21.157876+00:00",
+    "sha256": "8df8a5c069bbbac94812a4ec15edacab17208ccfad287f9fe59f51b3991f7808",
+    "error": null
+  },
+  {
+    "id": "license-crmeb--CRMEB",
+    "title": "crmeb/CRMEB LICENSE",
+    "url": "https://raw.githubusercontent.com/crmeb/CRMEB/master/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:11.054560+00:00",
+    "sha256": "0ada57a6024aadce0fcd03a70f40ac38c3ae59c31bc632a87cd2318ab5a18006",
+    "error": null
+  },
+  {
+    "id": "license-dcloudio--uni-app",
+    "title": "dcloudio/uni-app LICENSE",
+    "url": "https://raw.githubusercontent.com/dcloudio/uni-app/uni-app-x/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:11.556920+00:00",
+    "sha256": "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd",
+    "error": null
+  },
+  {
+    "id": "license-element-plus--element-plus",
+    "title": "element-plus/element-plus LICENSE",
+    "url": "https://raw.githubusercontent.com/element-plus/element-plus/dev/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:12.052303+00:00",
+    "sha256": "0790118bb4d66681db1d63181f72ef68e632d632f6db0373ef87cf328561af27",
+    "error": null
+  },
+  {
+    "id": "license-feige996--unibest",
+    "title": "feige996/unibest LICENSE",
+    "url": "https://raw.githubusercontent.com/feige996/unibest/base/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:11.548211+00:00",
+    "sha256": "3945cfd9282074bf1fb27b18a2fd749c39d81a6e068cc09bcb01c4da586db960",
+    "error": null
+  },
+  {
+    "id": "license-fushengqian--fuint",
+    "title": "fushengqian/fuint LICENSE",
+    "url": "https://raw.githubusercontent.com/fushengqian/fuint/master/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:19.829280+00:00",
+    "sha256": "76a97c878c9c7a8321bb395c2b44d3fe2f8d81314d219b20138ed0e2dddd5182",
+    "error": null
+  },
+  {
+    "id": "license-fushengqian--fuintCatering",
+    "title": "fushengqian/fuintCatering LICENSE",
+    "url": "https://raw.githubusercontent.com/fushengqian/fuintCatering/main/LICENSE",
+    "category": "github-license",
+    "status": 404,
+    "retrieved_at": "2026-10-20T06:57:19.838630+00:00",
+    "sha256": null,
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": "license-guchengwuyue--yshop-drink",
+    "title": "guchengwuyue/yshop-drink LICENSE",
+    "url": "https://raw.githubusercontent.com/guchengwuyue/yshop-drink/master/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:19.244372+00:00",
+    "sha256": "0cd19b4745d88bc643873f5c3581344d5fa447e1df28f3cbe0f3f1a5dbbb2ac0",
+    "error": null
+  },
+  {
+    "id": "license-likeadmin-likeshop--likeshop",
+    "title": "likeadmin-likeshop/likeshop LICENSE",
+    "url": "https://raw.githubusercontent.com/likeadmin-likeshop/likeshop/master/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:11.092546+00:00",
+    "sha256": "1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6",
+    "error": null
+  },
+  {
+    "id": "license-linlinjava--litemall",
+    "title": "linlinjava/litemall LICENSE",
+    "url": "https://raw.githubusercontent.com/linlinjava/litemall/master/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:10.527294+00:00",
+    "sha256": "20f75e61fd07d21f9a655937213ce46814b0e40f6ddb93a5f69938736c71dfa0",
+    "error": null
+  },
+  {
+    "id": "license-macrozheng--mall",
+    "title": "macrozheng/mall LICENSE",
+    "url": "https://raw.githubusercontent.com/macrozheng/mall/master/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:11.025868+00:00",
+    "sha256": "a3fd3b9971347a44bbecda3aaadf31ee2ecf71dcc83d4d1f1e3f8681dc5d5f5d",
+    "error": null
+  },
+  {
+    "id": "license-Moonofweisheng--wot-design-uni",
+    "title": "Moonofweisheng/wot-design-uni LICENSE",
+    "url": "https://raw.githubusercontent.com/Moonofweisheng/wot-design-uni/master/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:11.494860+00:00",
+    "sha256": "dc9368eba81255faf9bac0dc6d48247905a5f06bd5b031fdffa1dcd90667f489",
+    "error": null
+  },
+  {
+    "id": "license-nestjs--nest",
+    "title": "nestjs/nest LICENSE",
+    "url": "https://raw.githubusercontent.com/nestjs/nest/master/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:11.966254+00:00",
+    "sha256": "56967de93525b12a30717e4446ccef3bbe32fafdbe2350f143c1cc6971b19ed3",
+    "error": null
+  },
+  {
+    "id": "license-prisma--orm",
+    "title": "prisma/orm LICENSE",
+    "url": "https://raw.githubusercontent.com/prisma/orm/main/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:12.018764+00:00",
+    "sha256": "1b7b1c659a82d4688d9f781b3eaccccd5415500e5ba87f32f8f2a5e94dffaa15",
+    "error": null
+  },
+  {
+    "id": "license-Tencent--tdesign-miniprogram",
+    "title": "Tencent/tdesign-miniprogram LICENSE",
+    "url": "https://raw.githubusercontent.com/Tencent/tdesign-miniprogram/develop/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:12.483047+00:00",
+    "sha256": "b3dbcb89dcf4a11abf1b70d043795a3da0c458af16fefd2ff315d9ff5875312f",
+    "error": null
+  },
+  {
+    "id": "license-ury-erp--ury",
+    "title": "ury-erp/ury LICENSE",
+    "url": "https://raw.githubusercontent.com/ury-erp/ury/version-2/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:21.938892+00:00",
+    "sha256": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef",
+    "error": null
+  },
+  {
+    "id": "license-wechatpay-apiv3--wechatpay-java",
+    "title": "wechatpay-apiv3/wechatpay-java LICENSE",
+    "url": "https://raw.githubusercontent.com/wechatpay-apiv3/wechatpay-java/main/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:12.465142+00:00",
+    "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "error": null
+  },
+  {
+    "id": "license-WHaveFun--yipin",
+    "title": "WHaveFun/yipin LICENSE",
+    "url": "https://raw.githubusercontent.com/WHaveFun/yipin/main/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:21.394612+00:00",
+    "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "error": null
+  },
+  {
+    "id": "license-woniudiancang--bee",
+    "title": "woniudiancang/bee LICENSE",
+    "url": "https://raw.githubusercontent.com/woniudiancang/bee/master/LICENSE",
+    "category": "github-license",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:19.144011+00:00",
+    "sha256": "6326ae60dd78c85b1f2f6ff308ef1615ff939323270d838e8ebab20f5de1a8c5",
+    "error": null
+  },
+  {
+    "id": "license-yangxiaohan168--orderFood-wxCloud",
+    "title": "yangxiaohan168/orderFood-wxCloud LICENSE",
+    "url": "https://raw.githubusercontent.com/yangxiaohan168/orderFood-wxCloud/main/LICENSE",
+    "category": "github-license",
+    "status": 404,
+    "retrieved_at": "2026-10-20T06:57:20.504220+00:00",
+    "sha256": null,
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": "meituan-saas",
+    "title": "美团收银",
+    "url": "https://shouyin.meituan.com/",
+    "category": "industry",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:52:08.783562+00:00",
+    "sha256": "1ca71c971b866943fdddb2d37b1c45b9a41dee0af869db14dcd057ed3f3ec6d1",
+    "error": null
+  },
+  {
+    "id": "nestjs-auth",
+    "title": "NestJS 身份认证",
+    "url": "https://docs.nestjs.com/security/authentication",
+    "category": "technical-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:52:04.300293+00:00",
+    "sha256": "a5ca363b4e35cf5f27c778afb23496d9297b607b28cb486e9978aa09adaed6f7",
+    "error": null
+  },
+  {
+    "id": "package-uni-preset",
+    "title": "dcloudio/uni-preset-vue package.json",
+    "url": "https://raw.githubusercontent.com/dcloudio/uni-preset-vue/vite-ts/package.json",
+    "category": "github-build",
+    "status": 200,
+    "retrieved_at": "2026-10-20T07:01:45.889913+00:00",
+    "sha256": "895e998f8435a489a32db48f424367def437ca57afc458c814f552bfd0169a7b",
+    "error": null
+  },
+  {
+    "id": "package-unibest",
+    "title": "feige996/unibest package.json",
+    "url": "https://raw.githubusercontent.com/feige996/unibest/base/package.json",
+    "category": "github-build",
+    "status": 200,
+    "retrieved_at": "2026-10-20T07:01:45.804876+00:00",
+    "sha256": "f654c4d79dc0c4638b255e64874993511779dbe940a570f1345529fe023ceb38",
+    "error": null
+  },
+  {
+    "id": "package-wot",
+    "title": "Moonofweisheng/wot-design-uni package.json",
+    "url": "https://raw.githubusercontent.com/Moonofweisheng/wot-design-uni/master/package.json",
+    "category": "github-build",
+    "status": 200,
+    "retrieved_at": "2026-10-20T07:01:45.819762+00:00",
+    "sha256": "918d5e40aa6f52d2512f52cbb1a19118a66b0a8ffe4fac44f0968d0a0ab25cde",
+    "error": null
+  },
+  {
+    "id": "pay-mini-create",
+    "title": "微信支付 JSAPI/小程序下单",
+    "url": "https://pay.weixin.qq.com/doc/v3/merchant/4012791896",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:58:55.077891+00:00",
+    "sha256": "0d9a54aeeba3f0339953af33821cb308575e10cd75743c8c55906bbcffbd84b2",
+    "error": null
+  },
+  {
+    "id": "pay-mini-invoke",
+    "title": "小程序调起支付",
+    "url": "https://pay.weixin.qq.com/doc/v3/merchant/4012791898",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:58:55.078252+00:00",
+    "sha256": "cd304465f5c657e4b42cd743f72e70ad5e2f91d045ef37444dcd9238754a19a1",
+    "error": null
+  },
+  {
+    "id": "pay-mini-prepare",
+    "title": "小程序支付接入准备",
+    "url": "https://pay.weixin.qq.com/doc/v3/merchant/4015459512",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:58:55.638461+00:00",
+    "sha256": "08fc33e0802448bbd0c3e16193d9d9aba2bb6add6e6248d385820ac3c87900c5",
+    "error": null
+  },
+  {
+    "id": "pay-notify",
+    "title": "支付成功回调通知",
+    "url": "https://pay.weixin.qq.com/doc/v3/merchant/4012791861",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:58:55.079189+00:00",
+    "sha256": "a07878c6946232b7da07a91c898657baf6e238944d4fbc0bc1d94745bae11770",
+    "error": null
+  },
+  {
+    "id": "pay-refund-notify",
+    "title": "退款结果回调通知",
+    "url": "https://pay.weixin.qq.com/doc/v3/merchant/4012791865",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:58:55.079857+00:00",
+    "sha256": "7ce8bc7aa2cd9496aaeff874bd76a64b2134f5845ddb8aa021ec3f96bdfa4088",
+    "error": null
+  },
+  {
+    "id": "pay-refund",
+    "title": "退款申请",
+    "url": "https://pay.weixin.qq.com/doc/v3/merchant/4012791862",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:58:55.079635+00:00",
+    "sha256": "07668253237e293232215246c6568b2ca619586f570a938073c308a234e6e2c0",
+    "error": null
+  },
+  {
+    "id": "pay-signature",
+    "title": "微信支付签名认证",
+    "url": "https://pay.weixin.qq.com/doc/v3/merchant/4012365342",
+    "category": "wechat-official",
+    "status": 0,
+    "retrieved_at": "2026-10-20T06:58:55.080150+00:00",
+    "sha256": null,
+    "error": "<urlopen error [WinError 10060] 由于连接方在一段时间后没有正确答复或连接的主机没有反应，连接尝试失败。>"
+  },
+  {
+    "id": "postgres-locks",
+    "title": "PostgreSQL 锁与并发控制",
+    "url": "https://www.postgresql.org/docs/current/explicit-locking.html",
+    "category": "technical-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:52:07.773353+00:00",
+    "sha256": "c380ea819aae4ea552be1b8d3ae49caad9139c1d06a1d08ca98d79828c3f7472",
+    "error": null
+  },
+  {
+    "id": "prisma-transactions",
+    "title": "Prisma 事务",
+    "url": "https://www.prisma.io/docs/orm/prisma-client/queries/transactions",
+    "category": "technical-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:52:06.300105+00:00",
+    "sha256": "6abbfae147592987559a845c699b4f00c0c143e8b5dac959c7fc3f949e56e72c",
+    "error": null
+  },
+  {
+    "id": "readme-cocktail18--bee-api",
+    "title": "cocktail18/bee-api README.md",
+    "url": "https://raw.githubusercontent.com/cocktail18/bee-api/main/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:20.541283+00:00",
+    "sha256": "32f8182ecadc52baa6b77b0824500c05e0947de7c206bb726b448643dc4dbd18",
+    "error": null
+  },
+  {
+    "id": "readme-crmeb--CRMEB",
+    "title": "crmeb/CRMEB README.md",
+    "url": "https://raw.githubusercontent.com/crmeb/CRMEB/master/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:11.034935+00:00",
+    "sha256": "be8bbcc34de805d937b8b282217758cb7775037ab460ba0c6c78593307116462",
+    "error": null
+  },
+  {
+    "id": "readme-dcloudio--uni-app",
+    "title": "dcloudio/uni-app README.md",
+    "url": "https://raw.githubusercontent.com/dcloudio/uni-app/uni-app-x/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:11.549140+00:00",
+    "sha256": "902e39de2e8e0f23be91b525f8d2108eb74e150c57793c17b1e2ea47f33998a0",
+    "error": null
+  },
+  {
+    "id": "readme-element-plus--element-plus",
+    "title": "element-plus/element-plus README.md",
+    "url": "https://raw.githubusercontent.com/element-plus/element-plus/dev/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:12.033135+00:00",
+    "sha256": "34f977f760a6c674baf6bffca4b64b9d2592eac2e2dee80b6fc465fd95ab32ba",
+    "error": null
+  },
+  {
+    "id": "readme-feige996--unibest",
+    "title": "feige996/unibest README.md",
+    "url": "https://raw.githubusercontent.com/feige996/unibest/base/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:11.546299+00:00",
+    "sha256": "3067f319d764430617e82944b3bf6a80e0f46e1dab7b5e787bc5a046b4a4816d",
+    "error": null
+  },
+  {
+    "id": "readme-fushengqian--fuint",
+    "title": "fushengqian/fuint README.md",
+    "url": "https://raw.githubusercontent.com/fushengqian/fuint/master/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:19.817362+00:00",
+    "sha256": "ce1f10e276d20f02193ed80c90263321f541f049fb40bd9b06898fb8502e70b7",
+    "error": null
+  },
+  {
+    "id": "readme-fushengqian--fuintCatering",
+    "title": "fushengqian/fuintCatering README.md",
+    "url": "https://raw.githubusercontent.com/fushengqian/fuintCatering/main/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:19.838384+00:00",
+    "sha256": "0e1946faca4e95ea4b0b61986791d4b59adc7726824d22c9f7ac79f7363b9252",
+    "error": null
+  },
+  {
+    "id": "readme-guchengwuyue--yshop-drink",
+    "title": "guchengwuyue/yshop-drink README.md",
+    "url": "https://raw.githubusercontent.com/guchengwuyue/yshop-drink/master/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:19.145053+00:00",
+    "sha256": "c93c8cb39ebb2e2a82fd16a2f50d7d3f5aafde97c5c68975adce53fb62b74148",
+    "error": null
+  },
+  {
+    "id": "readme-likeadmin-likeshop--likeshop",
+    "title": "likeadmin-likeshop/likeshop README.md",
+    "url": "https://raw.githubusercontent.com/likeadmin-likeshop/likeshop/master/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:11.092126+00:00",
+    "sha256": "acab7eaa81cc3fb5e184946e3db155f7ce5855c2678fcad72718980b3dee8345",
+    "error": null
+  },
+  {
+    "id": "readme-linlinjava--litemall",
+    "title": "linlinjava/litemall README.md",
+    "url": "https://raw.githubusercontent.com/linlinjava/litemall/master/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:10.521548+00:00",
+    "sha256": "14a2e9e49afe82befd60ba40eece79ba2b832670c638bae9ebb1559fc445c660",
+    "error": null
+  },
+  {
+    "id": "readme-macrozheng--mall",
+    "title": "macrozheng/mall README.md",
+    "url": "https://raw.githubusercontent.com/macrozheng/mall/master/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:11.020885+00:00",
+    "sha256": "e387ff537c8d51b4a6a165a73198a560f92725f0d3d598d3488bdbd41d99f7d7",
+    "error": null
+  },
+  {
+    "id": "readme-Moonofweisheng--wot-design-uni",
+    "title": "Moonofweisheng/wot-design-uni README.md",
+    "url": "https://raw.githubusercontent.com/Moonofweisheng/wot-design-uni/master/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:11.468731+00:00",
+    "sha256": "0d69d4cd40a56c49b095270f47d6abaa704cd8df98fcb89d7d981e4e7b4c4010",
+    "error": null
+  },
+  {
+    "id": "readme-nestjs--nest",
+    "title": "nestjs/nest README.md",
+    "url": "https://raw.githubusercontent.com/nestjs/nest/master/README.md",
+    "category": "github-readme",
+    "status": 404,
+    "retrieved_at": "2026-10-20T06:53:11.945995+00:00",
+    "sha256": null,
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": "readme-prisma--orm",
+    "title": "prisma/orm README.md",
+    "url": "https://raw.githubusercontent.com/prisma/orm/main/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:12.018402+00:00",
+    "sha256": "ef9dd46580c30ba318723fb5bdb2b2f79ebc43a99c21ee10560a4d7a234386ad",
+    "error": null
+  },
+  {
+    "id": "readme-Tencent--tdesign-miniprogram",
+    "title": "Tencent/tdesign-miniprogram README.md",
+    "url": "https://raw.githubusercontent.com/Tencent/tdesign-miniprogram/develop/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:12.477190+00:00",
+    "sha256": "e201a834e8526f852ec250995d338609b8403000c85523e4234e69b1c412d947",
+    "error": null
+  },
+  {
+    "id": "readme-ury-erp--ury",
+    "title": "ury-erp/ury README.md",
+    "url": "https://raw.githubusercontent.com/ury-erp/ury/version-2/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:21.923890+00:00",
+    "sha256": "e3bc65ae38024654088c1dd7e17190c7bfaddc2c3b77c2e92ec1e517d1de4145",
+    "error": null
+  },
+  {
+    "id": "readme-wechatpay-apiv3--wechatpay-java",
+    "title": "wechatpay-apiv3/wechatpay-java README.md",
+    "url": "https://raw.githubusercontent.com/wechatpay-apiv3/wechatpay-java/main/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:12.451674+00:00",
+    "sha256": "f36fd0779ac7979ee5d01fcdca6ba173dfe563acf99b6b2e0d62b812fb713aad",
+    "error": null
+  },
+  {
+    "id": "readme-WHaveFun--yipin",
+    "title": "WHaveFun/yipin README.md",
+    "url": "https://raw.githubusercontent.com/WHaveFun/yipin/main/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:21.371015+00:00",
+    "sha256": "0593f2cf8bab5cfe623825a2abdb7245d39f22a9f1fcf1eca677e470d328cc95",
+    "error": null
+  },
+  {
+    "id": "readme-woniudiancang--bee",
+    "title": "woniudiancang/bee README.md",
+    "url": "https://raw.githubusercontent.com/woniudiancang/bee/master/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:19.143090+00:00",
+    "sha256": "517e87bfe5e53fa93519e81d0e7f568e8c7b4dab9a3b4e33663312e3623f2ffa",
+    "error": null
+  },
+  {
+    "id": "readme-yangxiaohan168--orderFood-wxCloud",
+    "title": "yangxiaohan168/orderFood-wxCloud README.md",
+    "url": "https://raw.githubusercontent.com/yangxiaohan168/orderFood-wxCloud/main/README.md",
+    "category": "github-readme",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:20.450652+00:00",
+    "sha256": "fcc7729703c67ad439a8ac28d6f27f5ed4d0abb254ac5a3e19cf710ca2048405",
+    "error": null
+  },
+  {
+    "id": "redis-idempotency",
+    "title": "Redis 分布式锁",
+    "url": "https://redis.io/docs/latest/develop/use/patterns/distributed-locks/",
+    "category": "technical-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:52:07.902841+00:00",
+    "sha256": "acedbc688aeace4ac9d3c8406d4d42238f612e90f90ad9c21a249b06ca184765",
+    "error": null
+  },
+  {
+    "id": "repo-cocktail18--bee-api",
+    "title": "cocktail18/bee-api",
+    "url": "https://api.github.com/repos/cocktail18/bee-api",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:09.987765+00:00",
+    "sha256": "af3355282217eaf7ddaae15c6bb17f11be01ddf644b753f0e9094acd5e84ec1e",
+    "error": null
+  },
+  {
+    "id": "repo-crmeb--CRMEB",
+    "title": "crmeb/CRMEB",
+    "url": "https://api.github.com/repos/crmeb/CRMEB",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:58.516384+00:00",
+    "sha256": "3cb181bf9b9fb40d0873eb19b356f7a1139ec05cbb9a73563f6cceea035cb99b",
+    "error": null
+  },
+  {
+    "id": "repo-dcloudio--uni-app",
+    "title": "dcloudio/uni-app",
+    "url": "https://api.github.com/repos/dcloudio/uni-app",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:58.590233+00:00",
+    "sha256": "8979960e933ad24c5892890a5a7a2d34f8709143ecde76f04574949dc005eb52",
+    "error": null
+  },
+  {
+    "id": "repo-element-plus--element-plus",
+    "title": "element-plus/element-plus",
+    "url": "https://api.github.com/repos/element-plus/element-plus",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:58.700974+00:00",
+    "sha256": "c0915aa0a36cb71b41ed02f08a344996b5deb1fbca98de5af12fb58c92984eae",
+    "error": null
+  },
+  {
+    "id": "repo-evan361425--flutter-pos-system",
+    "title": "evan361425/flutter-pos-system",
+    "url": "https://api.github.com/repos/evan361425/flutter-pos-system",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:10.519499+00:00",
+    "sha256": "8db342d112942018e01bf946b3757e7ead01fe3d10f83e23abb754bee8e3fad4",
+    "error": null
+  },
+  {
+    "id": "repo-fushengqian--fuint",
+    "title": "fushengqian/fuint",
+    "url": "https://api.github.com/repos/fushengqian/fuint",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:09.904910+00:00",
+    "sha256": "daed50add6d9f5e5e9e430150782756c8628c203f7a11df30ad01a47d776c411",
+    "error": null
+  },
+  {
+    "id": "repo-fushengqian--fuintCatering",
+    "title": "fushengqian/fuintCatering",
+    "url": "https://api.github.com/repos/fushengqian/fuintCatering",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:09.905586+00:00",
+    "sha256": "d1f0a912e3d8f7443d015037f3795261511d350d038e93d9dceedf78da5a3675",
+    "error": null
+  },
+  {
+    "id": "repo-guchengwuyue--yshop-drink",
+    "title": "guchengwuyue/yshop-drink",
+    "url": "https://api.github.com/repos/guchengwuyue/yshop-drink",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:09.904780+00:00",
+    "sha256": "11d3ac90bac1be6a85675fd5941fb6ea61572dab3a0f5d6a5f13373794e6305e",
+    "error": null
+  },
+  {
+    "id": "repo-likeshop-github--likeshop",
+    "title": "likeshop-github/likeshop",
+    "url": "https://api.github.com/repos/likeshop-github/likeshop",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:58.588008+00:00",
+    "sha256": "7002ed9d9ee85ac49b463d2ee39db5b571d5d0141c8ff14599a833a19697c81b",
+    "error": null
+  },
+  {
+    "id": "repo-linlinjava--litemall",
+    "title": "linlinjava/litemall",
+    "url": "https://api.github.com/repos/linlinjava/litemall",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:57.605076+00:00",
+    "sha256": "cb26b6c7a24a51dd24f6e90d5ebf9f6877df58bd24b9149cc873d3b1292b2dcf",
+    "error": null
+  },
+  {
+    "id": "repo-lpbird--imitate-coco-xcx",
+    "title": "lpbird/imitate-coco-xcx",
+    "url": "https://api.github.com/repos/lpbird/imitate-coco-xcx",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:10.521660+00:00",
+    "sha256": "2eeb794011c4f5f0bb0fbc4b8d6ce8758b7b0c655aa93699aa3d6f09e41bd546",
+    "error": null
+  },
+  {
+    "id": "repo-macrozheng--mall",
+    "title": "macrozheng/mall",
+    "url": "https://api.github.com/repos/macrozheng/mall",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:58.181312+00:00",
+    "sha256": "3270b7c5fb6d17196745403b0ce76960bade8e5b475a4b05aeccb43b6ae2b7f6",
+    "error": null
+  },
+  {
+    "id": "repo-Moonofweisheng--wot-design-uni",
+    "title": "Moonofweisheng/wot-design-uni",
+    "url": "https://api.github.com/repos/Moonofweisheng/wot-design-uni",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:58.597412+00:00",
+    "sha256": "60682920155a6ef737491b96cc05978740d4655814e8dc1fd2c0f902e1d1b41e",
+    "error": null
+  },
+  {
+    "id": "repo-NervJS--taro",
+    "title": "NervJS/taro",
+    "url": "https://api.github.com/repos/NervJS/taro",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:59.717383+00:00",
+    "sha256": "7d946d4f1386cd27b7196d8f5215375235c50d096f3096cc2461260f791c6133",
+    "error": null
+  },
+  {
+    "id": "repo-nestjs--nest",
+    "title": "nestjs/nest",
+    "url": "https://api.github.com/repos/nestjs/nest",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:59.111001+00:00",
+    "sha256": "500f8d4403ce3d96c101045be5772e745ad3608e1e16ba89bb094b1215994b74",
+    "error": null
+  },
+  {
+    "id": "repo-prisma--prisma",
+    "title": "prisma/prisma",
+    "url": "https://api.github.com/repos/prisma/prisma",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:59.141100+00:00",
+    "sha256": "d74ebe10ada222db1ed3d41b261da6f1ba1a7c6683985c69c1b5fdac801719d2",
+    "error": null
+  },
+  {
+    "id": "repo-Tencent--tdesign-miniprogram",
+    "title": "Tencent/tdesign-miniprogram",
+    "url": "https://api.github.com/repos/Tencent/tdesign-miniprogram",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:59.163780+00:00",
+    "sha256": "282a90eb0a9c8f8c8056a79660446eb4285073384055c5bbf52c0e73ee5c99a9",
+    "error": null
+  },
+  {
+    "id": "repo-unibest-tech--unibest",
+    "title": "unibest-tech/unibest",
+    "url": "https://api.github.com/repos/unibest-tech/unibest",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:59.716900+00:00",
+    "sha256": "ae1c8783bca87ed2d890f6f6d865f13e3a93da1b91b194e449d4d1b5fbdb23c1",
+    "error": null
+  },
+  {
+    "id": "repo-ury-erp--ury",
+    "title": "ury-erp/ury",
+    "url": "https://api.github.com/repos/ury-erp/ury",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:10.519018+00:00",
+    "sha256": "6e4863abf8b11196ffde1de74f4db7123a9d761cc8a7ddaa17d73d83a68987e2",
+    "error": null
+  },
+  {
+    "id": "repo-Vendure-ecommerce--vendure",
+    "title": "Vendure-ecommerce/vendure",
+    "url": "https://api.github.com/repos/Vendure-ecommerce/vendure",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:59.717193+00:00",
+    "sha256": "4000df4d1a7af3fa250d3342983c42116506df40afcb4952e484e6eac1d8d151",
+    "error": null
+  },
+  {
+    "id": "repo-wechat-miniprogram--miniprogram-demo",
+    "title": "wechat-miniprogram/miniprogram-demo",
+    "url": "https://api.github.com/repos/wechat-miniprogram/miniprogram-demo",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:59.253498+00:00",
+    "sha256": "f669e458e0d4c2a3034b3fa8266233b1066cff4a1779cd31fb2461fe6eccb2d9",
+    "error": null
+  },
+  {
+    "id": "repo-wechatpay-apiv3--wechatpay-java",
+    "title": "wechatpay-apiv3/wechatpay-java",
+    "url": "https://api.github.com/repos/wechatpay-apiv3/wechatpay-java",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:59.680533+00:00",
+    "sha256": "9ebfdbe7def8cd3ac02b3244c4613aa175a8c149b20095a7a0e6c1f097eff349",
+    "error": null
+  },
+  {
+    "id": "repo-WHaveFun--yipin",
+    "title": "WHaveFun/yipin",
+    "url": "https://api.github.com/repos/WHaveFun/yipin",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:10.518682+00:00",
+    "sha256": "41b07a287bd2f0607be1384cebf9873eb69d6edfde7d854f8006abbaa135361b",
+    "error": null
+  },
+  {
+    "id": "repo-woniudiancang--bee",
+    "title": "woniudiancang/bee",
+    "url": "https://api.github.com/repos/woniudiancang/bee",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:09.904147+00:00",
+    "sha256": "767ae53ed1035025f4222ceef75d450636bb2a7cc5233ac49f9f5e67d8666a21",
+    "error": null
+  },
+  {
+    "id": "repo-yangxiaohan168--orderFood-wxCloud",
+    "title": "yangxiaohan168/orderFood-wxCloud",
+    "url": "https://api.github.com/repos/yangxiaohan168/orderFood-wxCloud",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:53:09.974937+00:00",
+    "sha256": "cb791b2771255a25df9a871fa3bffed8c2be797d0755684b306eabd2ae5d1dc9",
+    "error": null
+  },
+  {
+    "id": "repo-youzan--vant-weapp",
+    "title": "youzan/vant-weapp",
+    "url": "https://api.github.com/repos/youzan/vant-weapp",
+    "category": "github-repository",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:59.155230+00:00",
+    "sha256": "8d860ad1ddcbd5dcfe0db0c419534b60ce7189172ff6d19c2820c6bf519f410a",
+    "error": null
+  },
+  {
+    "id": "search-membership",
+    "title": "微信 会员 商城",
+    "url": "https://api.github.com/search/repositories?q=%E5%BE%AE%E4%BF%A1%20%E4%BC%9A%E5%91%98%20%E5%95%86%E5%9F%8E&sort=stars&per_page=8",
+    "category": "github-search",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:57.479350+00:00",
+    "sha256": "b39c3804cf731e4985cc3f0c9ea1e9dd36d8b7d414087c7f8d109d01cae645b5",
+    "error": null
+  },
+  {
+    "id": "search-ordering",
+    "title": "微信 点餐",
+    "url": "https://api.github.com/search/repositories?q=%E5%BE%AE%E4%BF%A1%20%E7%82%B9%E9%A4%90&sort=stars&per_page=8",
+    "category": "github-search",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:57.477776+00:00",
+    "sha256": "0569854e49d99ec11a51589263abdb22fb60d486e40d5997cc261c103fce4300",
+    "error": null
+  },
+  {
+    "id": "search-pos",
+    "title": "restaurant pos",
+    "url": "https://api.github.com/search/repositories?q=restaurant%20pos&sort=stars&per_page=8",
+    "category": "github-search",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:57.478866+00:00",
+    "sha256": "70595f6a3fa262fa768d9127cc3dbadd1a7d598a9d57940b24af6bc9c033dcd2",
+    "error": null
+  },
+  {
+    "id": "search-restaurant",
+    "title": "餐饮 小程序",
+    "url": "https://api.github.com/search/repositories?q=%E9%A4%90%E9%A5%AE%20%E5%B0%8F%E7%A8%8B%E5%BA%8F&sort=stars&per_page=8",
+    "category": "github-search",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:57.478178+00:00",
+    "sha256": "770ad228d8a11f85c034f7aadde99927dde6f3246691770dad6227cefc4d51d0",
+    "error": null
+  },
+  {
+    "id": "search-uni-food",
+    "title": "uniapp 点餐",
+    "url": "https://api.github.com/search/repositories?q=uniapp%20%E7%82%B9%E9%A4%90&sort=stars&per_page=8",
+    "category": "github-search",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:57.479469+00:00",
+    "sha256": "d41fb60b816baa3af33e4e882bb382a53998e3d36e79b9aec355d3cf1bb3b45b",
+    "error": null
+  },
+  {
+    "id": "sf-open",
+    "title": "顺丰开放平台",
+    "url": "https://open.sf-express.com/",
+    "category": "technical-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:52:09.447263+00:00",
+    "sha256": "efbc93fde7ae6542f19717142d8ea6b9022e445d71f609f099f69d9f358b2039",
+    "error": null
+  },
+  {
+    "id": "tree-cocktail18--bee-api",
+    "title": "cocktail18/bee-api recursive tree",
+    "url": "https://api.github.com/repos/cocktail18/bee-api/git/trees/main?recursive=1",
+    "category": "github-code-tree",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:21.214313+00:00",
+    "sha256": "9fb987d28a3dc8c59799da33d29b17ee0fcf960b9bdc7aa073cab5974ad0605d",
+    "error": null
+  },
+  {
+    "id": "tree-guchengwuyue--yshop-drink",
+    "title": "guchengwuyue/yshop-drink recursive tree",
+    "url": "https://api.github.com/repos/guchengwuyue/yshop-drink/git/trees/master?recursive=1",
+    "category": "github-code-tree",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:19.247044+00:00",
+    "sha256": "52c881bc20a7e36358537954c05d5270513d2ed4b3d29a1b608dcc30432e3d3e",
+    "error": null
+  },
+  {
+    "id": "tree-linlinjava--litemall",
+    "title": "litemall recursive tree",
+    "url": "https://api.github.com/repos/linlinjava/litemall/git/trees/master?recursive=1",
+    "category": "github-code-tree",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:21.969297+00:00",
+    "sha256": "08bd403b618641861af242927936bed43f66e2716f4e5534578d67f9ece26e20",
+    "error": null
+  },
+  {
+    "id": "tree-woniudiancang--bee",
+    "title": "woniudiancang/bee recursive tree",
+    "url": "https://api.github.com/repos/woniudiancang/bee/git/trees/master?recursive=1",
+    "category": "github-code-tree",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:19.144516+00:00",
+    "sha256": "79fde0d46d366c089f5643b4f0a75a6b0b546624267f9cc9afbb8ee7a90bac52",
+    "error": null
+  },
+  {
+    "id": "tree-yangxiaohan168--orderFood-wxCloud",
+    "title": "yangxiaohan168/orderFood-wxCloud recursive tree",
+    "url": "https://api.github.com/repos/yangxiaohan168/orderFood-wxCloud/git/trees/main?recursive=1",
+    "category": "github-code-tree",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:20.506263+00:00",
+    "sha256": "3c5ac4711695d3771c7507c677a5b6a782aa3adf49408638ae64cf699238f74d",
+    "error": null
+  },
+  {
+    "id": "uni-app-intro",
+    "title": "uni-app 官方文档",
+    "url": "https://uniapp.dcloud.net.cn/",
+    "category": "technical-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:52:03.709444+00:00",
+    "sha256": "93a2f386a3ebb613d334af7e81974c3f22dcb414121558351c5a1d29d9907627",
+    "error": null
+  },
+  {
+    "id": "uni-security",
+    "title": "uni-app 跨端注意事项",
+    "url": "https://uniapp.dcloud.net.cn/tutorial/platform.html",
+    "category": "technical-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:27.991173+00:00",
+    "sha256": "9fd7eed5f24dbcbc8d5eba28abfbeae2d1b7c177c8c723ae74e9a6c2696e5faa",
+    "error": null
+  },
+  {
+    "id": "uni-vue3",
+    "title": "uni-app Vue3 支持",
+    "url": "https://uniapp.dcloud.net.cn/tutorial/vue3-basics.html",
+    "category": "technical-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:26.681293+00:00",
+    "sha256": "58db61b906655bc50ca848174a3f91cbdee93fd46da699ced81b72a107099643",
+    "error": null
+  },
+  {
+    "id": "wechatpay-intro",
+    "title": "微信支付 小程序支付",
+    "url": "https://pay.weixin.qq.com/doc/v3/merchant/4012791856",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:52:08.052683+00:00",
+    "sha256": "cf7b65a5896c13b0aed6d9e0f94c784d71c5e85e3e712e658a9662a8eb41b342",
+    "error": null
+  },
+  {
+    "id": "wot-doc-current",
+    "title": "Wot UI 快速上手",
+    "url": "https://v1.wot-ui.cn/guide/quick-use.html",
+    "category": "technical-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:26.352796+00:00",
+    "sha256": "a23ce134aafda2eb89f51286c36caf20948bec006ed2cd6130abc6312bd73c0b",
+    "error": null
+  },
+  {
+    "id": "wot-intro",
+    "title": "Wot Design Uni 官方文档",
+    "url": "https://wot-design-uni.cn/",
+    "category": "technical-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:52:03.879192+00:00",
+    "sha256": "d1b4cd1050daefbaba910364e56589d94dcfeeb4e5dcf55de65d52309c9d80ae",
+    "error": null
+  },
+  {
+    "id": "wx-code-legacy",
+    "title": "小程序码接口旧版文档",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/qr-code/wxacode.getUnlimited.html",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:24.184811+00:00",
+    "sha256": "03035d3119f0b4f83bd2c964a2e7624d384420ffb3a65709bd6e0cbc57ee3cda",
+    "error": null
+  },
+  {
+    "id": "wx-favorite",
+    "title": "收藏事件与生命周期",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/reference/api/Page.html#onAddToFavorites-Object-object",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:25.805204+00:00",
+    "sha256": "2ee58a8c3db0c67271380bf3d077f4c41f861267f0cc78e185e1ef29f9a33694",
+    "error": null
+  },
+  {
+    "id": "wx-login",
+    "title": "小程序登录",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/login.html",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:51:59.792766+00:00",
+    "sha256": "d2fe4439f50aecff15d3ba4e02c36537c912260193594be9bdab996f277b2e76",
+    "error": null
+  },
+  {
+    "id": "wx-operation",
+    "title": "微信小程序运营规范",
+    "url": "https://developers.weixin.qq.com/miniprogram/product/operation.html",
+    "category": "wechat-official",
+    "status": 404,
+    "retrieved_at": "2026-10-20T06:57:22.508268+00:00",
+    "sha256": null,
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": "wx-payment",
+    "title": "小程序发起支付",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/api/payment/wx.requestPayment.html",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:52:00.200887+00:00",
+    "sha256": "bf08d4611f83bf8ba9968ae0fe9ae64c6cac69e87160779bd6ee09ed22957862",
+    "error": null
+  },
+  {
+    "id": "wx-phone",
+    "title": "手机号能力",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/getPhoneNumber.html",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:52:03.134281+00:00",
+    "sha256": "9349b15ca3b4346b58bf40535821e87728fe7e822073a49cda2552a62ce2d31c",
+    "error": null
+  },
+  {
+    "id": "wx-privacy",
+    "title": "小程序隐私保护",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/framework/user-privacy/",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:52:00.705563+00:00",
+    "sha256": "c6337c44fd76bba3bee55601e0b6a86d95dec3d2098d437219276653c84571b5",
+    "error": null
+  },
+  {
+    "id": "wx-qrcode-current",
+    "title": "获取不限制的小程序码",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/server/API/qrcode-link/qr-code/api_getunlimitedqrcode.html",
+    "category": "wechat-official",
+    "status": 0,
+    "retrieved_at": "2026-10-20T06:58:56.352760+00:00",
+    "sha256": null,
+    "error": "<urlopen error [WinError 10060] 由于连接方在一段时间后没有正确答复或连接的主机没有反应，连接尝试失败。>"
+  },
+  {
+    "id": "wx-qrcode",
+    "title": "小程序码",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/qrcode-link/qr-code/getUnlimitedQRCode.html",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:52:00.753537+00:00",
+    "sha256": "03035d3119f0b4f83bd2c964a2e7624d384420ffb3a65709bd6e0cbc57ee3cda",
+    "error": null
+  },
+  {
+    "id": "wx-request",
+    "title": "小程序网络请求",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/api/network/request/wx.request.html",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:52:00.186116+00:00",
+    "sha256": "576f6ae857ca8b541b00ac6e0bd990089fa156dfc5df1ef6fca0ce54358271c4",
+    "error": null
+  },
+  {
+    "id": "wx-rules-current",
+    "title": "微信小程序产品指南",
+    "url": "https://developers.weixin.qq.com/miniprogram/product/",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:58:56.639818+00:00",
+    "sha256": "6d899b3e255ff346058123a70ac234628164463b368234acbc95de9a2999bcf3",
+    "error": null
+  },
+  {
+    "id": "wx-subscribe",
+    "title": "订阅消息",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/subscribe-message.html",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:52:00.258867+00:00",
+    "sha256": "2e55120cc490cc25a20a36e0250c0a744f0a3369ac2aaba41b1c6f5204181d20",
+    "error": null
+  },
+  {
+    "id": "wx-unlimited-code",
+    "title": "小程序码接口核查",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/qrcode-link/qr-code/getUnlimitedQRCode.html",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:23.160908+00:00",
+    "sha256": "03035d3119f0b4f83bd2c964a2e7624d384420ffb3a65709bd6e0cbc57ee3cda",
+    "error": null
+  },
+  {
+    "id": "wx-user-privacy",
+    "title": "小程序隐私授权开发指南",
+    "url": "https://developers.weixin.qq.com/miniprogram/dev/framework/user-privacy/PrivacyAuthorize.html",
+    "category": "wechat-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:22.534600+00:00",
+    "sha256": "89e8bf56364b63aa8ad4d641c4d96f365bf0a0ee9acd756d02f85d5ce6c36c0f",
+    "error": null
+  },
+  {
+    "id": "yilianyun-open",
+    "title": "易联云开放平台",
+    "url": "https://dev.yilianyun.net/",
+    "category": "technical-official",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:57:26.295207+00:00",
+    "sha256": "3b077970a4dd22893058c12d6ece5c5f3dcc55c7b22f6d960efd39cc5e06d368",
+    "error": null
+  },
+  {
+    "id": "youzan-catering",
+    "title": "有赞餐饮 产品能力",
+    "url": "https://www.youzan.com/intro/solution/catering",
+    "category": "industry",
+    "status": 404,
+    "retrieved_at": "2026-10-20T06:52:08.082938+00:00",
+    "sha256": null,
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": "youzan-official",
+    "title": "有赞产品官网",
+    "url": "https://www.youzan.com/",
+    "category": "industry",
+    "status": 200,
+    "retrieved_at": "2026-10-20T06:59:00.250244+00:00",
+    "sha256": "69464ca9d6217969234be3740c19fc80975f1a616a09688a00afa77300a85791",
+    "error": null
+  }
+]

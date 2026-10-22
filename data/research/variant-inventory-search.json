@@ -1,0 +1,38 @@
+{
+  "success": true,
+  "partial": false,
+  "results": [
+    {
+      "id": "doc:https://github.com/medusajs/medusa/blob/61c19c3099d58b3b3900da70d92a647c33b09bb5/www/apps/resources/app/commerce-modules/product/variant-inventory/page.mdx",
+      "url": "https://github.com/medusajs/medusa/blob/61c19c3099d58b3b3900da70d92a647c33b09bb5/www/apps/resources/app/commerce-modules/product/variant-inventory/page.mdx",
+      "title": "Product Variant Inventory",
+      "passages": [
+        {
+          "text": "# {metadata.title}\n## Configure Inventory Management of Product Variants\nWhen `manage_inventory` is disabled, the Medusa application always considers the product variant to be in stock.\n\n## How the Medusa Application Manages Inventory\nThe inventory item has one or more locations, called inventory levels, that represent the stock quantity of the product variant at a specific location. This allows you to manage inventory across multiple warehouses, such as a warehouse in the US and another in Europe.\n\nDiagram showcasing the link between a variant and its inventory item, and the inventory item's level.\n\nThe Medusa application represents and manages stock locations using the Stock Location Module. It creates a read-only link between the `InventoryLevel` and `StockLocation` data models so that it can retrieve the stock location of an inventory level.\n\nDiagram showcasing the read-only link between an inventory level and a stock location\n\nLearn more about the Stock Location Module in the Stock Location Module's documentation.\n\n### Product Inventory in Storefronts\nThe Medusa application links sales channels to stock locations, indicating the locations available for a specific sales channel. So, all inventory-related operations are scoped by the sales channel and its associated stock locations.\n\nFor example, the availability of a product variant is determined by the `stocked_quantity` of its inventory level at the stock location linked to the storefront's sales channel."
+        }
+      ],
+      "license": "NOASSERTION"
+    },
+    {
+      "id": "doc:https://medusajs.com/blog/announcing-multi-warehouse",
+      "url": "https://medusajs.com/blog/announcing-multi-warehouse",
+      "title": "Announcing Multi-Warehouse",
+      "passages": [
+        {
+          "text": "# Announcing Multi-Warehouse\nWe are excited to announce the release of two new modules built with the new Module SDK: Inventory and Stock Locations.\n\n## Flexible fulfillment options\n### Managing inventory\nLocations are managed from the new sidebar item **Inventory** in a dedicated **Locations** tab.\n\n## Managing Locations and Sales Channels\nReservations can be used to allocate stock at an inventory level.\n\n### Reservations\nInventory Levels hold stock information for an inventory item at a specific location.\n\n### Inventory Item Levels\nInventory Items represent your stock-kept items.\n\n## New primitives to manage inventory\nMedusa now offers a comprehensive, ready-to-use solution for effectively managing inventory across various locations and streamlining order fulfillment processes.\n\nWe are excited to announce the release of two new modules built with the new Module SDK: Inventory and Stock Locations."
+        }
+      ]
+    },
+    {
+      "id": "doc:https://github.com/medusajs/medusa/blob/61c19c3099d58b3b3900da70d92a647c33b09bb5/www/apps/resources/app/commerce-modules/inventory/links-to-other-modules/page.mdx",
+      "url": "https://github.com/medusajs/medusa/blob/61c19c3099d58b3b3900da70d92a647c33b09bb5/www/apps/resources/app/commerce-modules/inventory/links-to-other-modules/page.mdx",
+      "title": "{metadata.title}",
+      "passages": [
+        {
+          "text": "# {metadata.title}\n## Summary\n\n## Product Module\nEach product variant has different inventory details.\n\nA product variant whose `manage_inventory` property is enabled has an associated inventory item.\n\nLearn more about product variant's inventory management in this guide.\n\n### Retrieve with Query\n\n### Manage with Link\nTo manage the variants of an inventory item, use Link:\n\n## Stock Location Module\nMedusa defines a read-only link between the `InventoryLevel` data model and the Stock Location Module's `StockLocation` data model. This means you can retrieve the details of an inventory level's stock locations, but you don't manage the links in a pivot table in the database. The stock location of an inventory level is determined by the `location_id` property of the `InventoryLevel` data model."
+        }
+      ],
+      "license": "NOASSERTION"
+    }
+  ]
+}

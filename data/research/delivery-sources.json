@@ -1,0 +1,123 @@
+[
+  {
+    "url": "https://github.com/medusajs/medusa/blob/61c19c3099d58b3b3900da70d92a647c33b09bb5/www/apps/resources/app/commerce-modules/fulfillment/shipping-option/page.mdx",
+    "method": "firecrawl-cli scrape after developer search",
+    "licenseEvidence": "NOASSERTION in developer index; no code copied",
+    "localPath": ".firecrawl/medusa-shipping-option.md",
+    "id": "medusa-shipping-option",
+    "sha256OfSavedExtraction": "3bb26e388e3ae320232846f25a60d18860904f7284fccc9c5eff5edf560df6f2",
+    "excerpt": "The shipping option has no stored price. Instead, its price is calculated during checkout by the shipping option fulfillment provider.",
+    "readDate": "2026-10-20",
+    "kind": "full-file-extraction"
+  },
+  {
+    "url": "https://github.com/microsoftdocs/dynamics-365-unified-operations-public/blob/7dee2e089ec38e2e3fbb1a0bda9269f3d8890347/articles/commerce/dev-itpro/pickup-timeslots.md",
+    "method": "firecrawl-cli scrape after developer search",
+    "licenseEvidence": "CC-BY-4.0 in developer index; rule citation only",
+    "localPath": ".firecrawl/pickup-timeslots.md",
+    "id": "dynamics-pickup-timeslots",
+    "sha256OfSavedExtraction": "86e8c3d84ba8a5071843ca2f4cc9b9c5d13ac8c287c1205f9ae013af1d996461",
+    "excerpt": "The hours for store pickup must be defined in the time zone of the appropriate store.",
+    "readDate": "2026-10-20",
+    "kind": "full-file-extraction"
+  },
+  {
+    "url": "https://github.com/guchengwuyue/yshop-drink/blob/42f416022f5d7b51b7a581976638b1895e20407d/yshop-drink-boot3/yshop-module-member/yshop-module-member-biz/src/main/java/co/yixiang/yshop/module/member/service/useraddress/AppUserAddressServiceImpl.java",
+    "method": "firecrawl-cli scrape after developer search",
+    "licenseEvidence": "Existing MIT evidence: docs/research/licenses/guchengwuyue--yshop-drink.txt; no code copied",
+    "localPath": ".firecrawl/yshop-address-service.md",
+    "id": "yshop-address-service",
+    "sha256OfSavedExtraction": "12f2ec1ba874cc2a776513917954af7e4431dcd869f1e24a340a1ca17e1e0e74",
+    "excerpt": "getList scopes by uid; the read addAndEdit/setDefault methods call updateById without uid in that final update.",
+    "readDate": "2026-10-20",
+    "kind": "full-file-extraction"
+  },
+  {
+    "readDate": "2026-10-20",
+    "kind": "full-page-extraction",
+    "sha256OfSavedExtraction": "269097ae9cad1336ac9aa7e4ec446c4416aa9ff949d6cb0f2242fdbc998d00f7",
+    "method": "firecrawl-cli scrape after developer search",
+    "licenseEvidence": "API documentation reference only; dependency not installed or licensed by this entry",
+    "excerpt": "type defaults to wgs84; gcj02 for map; App and H5 require positioning SDK configuration for gcj02.",
+    "id": "uniapp-location",
+    "localPath": ".firecrawl/uniapp-location.md",
+    "url": "https://uniapp.dcloud.io/api/location/location.html"
+  },
+  {
+    "readDate": "2026-10-20",
+    "kind": "full-page-extraction",
+    "sha256OfSavedExtraction": "dfca1c5bdee615883ed0778262464a0a927f14e99d750dbe96520e89c7a16d87",
+    "method": "firecrawl-cli scrape after developer search",
+    "licenseEvidence": "API documentation reference only; dependency not installed or licensed by this entry",
+    "excerpt": "Need scope.userLocation; coordinates used with map should use gcj02.",
+    "id": "wechat-getlocation",
+    "localPath": ".firecrawl/wechat-getlocation.md",
+    "url": "https://developers.weixin.qq.com/miniprogram/en/dev/api/location/wx.getLocation.html"
+  },
+  {
+    "readDate": "2026-10-20",
+    "kind": "full-page-extraction",
+    "sha256OfSavedExtraction": "8b065e9fdd3fcf1bb566ab2589b589c307b7fdf043233dd09bc75da6644bf4d0",
+    "method": "firecrawl-cli scrape after developer search",
+    "licenseEvidence": "API documentation reference only; dependency not installed or licensed by this entry",
+    "excerpt": "Point and Polygon/MultiPolygon; ignoreBoundary controls polygon boundary behavior.",
+    "id": "turf-point-in-polygon",
+    "localPath": ".firecrawl/turf-point-in-polygon.md",
+    "url": "https://turfjs.org/docs/api/booleanPointInPolygon"
+  },
+  {
+    "readDate": "2026-10-20",
+    "kind": "full-page-extraction",
+    "sha256OfSavedExtraction": "f2bae440f98dd578572191f3ed3a77ab9f8f477fa8c88f932a2d74ec2681ce58",
+    "method": "firecrawl-cli scrape after developer search",
+    "licenseEvidence": "API documentation reference only; dependency not installed or licensed by this entry",
+    "excerpt": "Returns self-intersection points of polygon or linestring.",
+    "id": "turf-kinks",
+    "localPath": ".firecrawl/turf-kinks.md",
+    "url": "https://turfjs.org/docs/api/kinks"
+  },
+  {
+    "licenseEvidence": "Documentation/API reference only, no copied code; Prisma Apache2 evidence already retained",
+    "localPath": ".firecrawl/pickup-pg16-serialization.md",
+    "id": "pg16-serialization",
+    "sha256OfSavedExtraction": "8fc47f0bad1056fc335ab99a3963583564d1842dd6b93306a3231d16970847e9",
+    "url": "https://www.postgresql.org/docs/16/mvcc-serialization-failure-handling.html",
+    "method": "firecrawl-cli scrape following developer search",
+    "excerpt": "Retry the complete transaction; unique violations can be persistent.",
+    "readDate": "2026-10-20",
+    "kind": "full-page-extraction"
+  },
+  {
+    "licenseEvidence": "Documentation/API reference only, no copied code; Prisma Apache2 evidence already retained",
+    "localPath": ".firecrawl/pickup-pg16-ranges.md",
+    "id": "pg16-ranges",
+    "sha256OfSavedExtraction": "5edd49818494b1c4dff880ca2e369a96d54150ae27dd6cb94273d089320f8605",
+    "url": "https://www.postgresql.org/docs/16/rangetypes.html",
+    "method": "firecrawl-cli scrape following developer search",
+    "excerpt": "Range exclusions prevent overlap; scalar plus range example needs btree_gist, not introduced.",
+    "readDate": "2026-10-20",
+    "kind": "full-page-extraction"
+  },
+  {
+    "licenseEvidence": "Documentation/API reference only, no copied code; Prisma Apache2 evidence already retained",
+    "localPath": ".firecrawl/pickup-prisma-transactions.md",
+    "id": "prisma-current-transactions-version-mismatch",
+    "sha256OfSavedExtraction": "f63ff3262b4de3bdeaee1746d49b3035f0ebaf38468db60ab2a0493aff640065",
+    "url": "https://www.prisma.io/docs/orm/prisma-client/queries/transactions",
+    "method": "firecrawl-cli scrape following developer search",
+    "excerpt": "Fetched current content refers to Prisma8 and db.transaction; incompatible reference for locked6.19.",
+    "readDate": "2026-10-20",
+    "kind": "full-page-extraction"
+  },
+  {
+    "licenseEvidence": "Documentation/API reference only, no copied code; Prisma Apache2 evidence already retained",
+    "localPath": ".firecrawl/pickup-prisma619-tests.md",
+    "id": "prisma619-interactive-transaction-tests",
+    "sha256OfSavedExtraction": "974d5703a5540e7431d4325b3e0ba409643473db42bf92da4afbf7545da333c0",
+    "url": "https://github.com/prisma/prisma/blob/6.19.0/packages/client/tests/functional/interactive-transactions/tests.ts",
+    "method": "firecrawl-cli scrape following developer search",
+    "excerpt": "Tagged6.19 test shows TransactionIsolationLevel.Serializable and $transaction options; does not independently prove P2034.",
+    "readDate": "2026-10-20",
+    "kind": "full-page-extraction"
+  }
+]

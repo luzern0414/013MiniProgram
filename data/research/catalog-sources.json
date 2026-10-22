@@ -1,0 +1,42 @@
+[
+  {
+    "id": "catalog-yshop-StoreProductRuleServiceImpl.java",
+    "url": "https://raw.githubusercontent.com/guchengwuyue/yshop-drink/42f416022f5d7b51b7a581976638b1895e20407d/yshop-drink-boot3/yshop-module-mall/yshop-module-product-biz/src/main/java/co/yixiang/yshop/module/product/service/storeproductrule/StoreProductRuleServiceImpl.java",
+    "title": "StoreProductRuleServiceImpl.java",
+    "category": "github-code",
+    "status": 200,
+    "sha256": "6b98aa55460223cd16512782e2e5f57c5182a0a5903dba5ceec72a5e0aaf0ab3",
+    "retrieved_at": "2026-10-20T09:03:45.326255+00:00",
+    "error": null
+  },
+  {
+    "id": "catalog-yshop-AppStoreProductServiceImpl.java",
+    "url": "https://raw.githubusercontent.com/guchengwuyue/yshop-drink/42f416022f5d7b51b7a581976638b1895e20407d/yshop-drink-boot3/yshop-module-mall/yshop-module-product-biz/src/main/java/co/yixiang/yshop/module/product/service/storeproduct/AppStoreProductServiceImpl.java",
+    "title": "AppStoreProductServiceImpl.java",
+    "category": "github-code",
+    "status": 200,
+    "sha256": "0c15247d523349f40fdcead7a695db396bdcaf6600e6a1cb26b0a5ce350167c4",
+    "retrieved_at": "2026-10-20T09:03:45.325448+00:00",
+    "error": null
+  },
+  {
+    "id": "catalog-yshop-StoreProductAttrValueDO.java",
+    "url": "https://raw.githubusercontent.com/guchengwuyue/yshop-drink/42f416022f5d7b51b7a581976638b1895e20407d/yshop-drink-boot3/yshop-module-mall/yshop-module-product-biz/src/main/java/co/yixiang/yshop/module/product/dal/dataobject/storeproductattrvalue/StoreProductAttrValueDO.java",
+    "title": "StoreProductAttrValueDO.java",
+    "category": "github-code",
+    "status": 200,
+    "sha256": "6334fef972536f1c8aceef53d7b1d60ae965ecc9447db22cd5cc0e6cfcd37104",
+    "retrieved_at": "2026-10-20T09:03:45.324637+00:00",
+    "error": null
+  },
+  {
+    "id": "catalog-yshop-StoreProductServiceImpl.java",
+    "url": "https://raw.githubusercontent.com/guchengwuyue/yshop-drink/42f416022f5d7b51b7a581976638b1895e20407d/yshop-drink-boot3/yshop-module-mall/yshop-module-product-biz/src/main/java/co/yixiang/yshop/module/product/service/storeproduct/StoreProductServiceImpl.java",
+    "title": "StoreProductServiceImpl.java",
+    "category": "github-code",
+    "status": 200,
+    "sha256": "53949e3095d3ab05d65354a61946dc4d3a6a91d3853470c430cec4880680ec27",
+    "retrieved_at": "2026-10-20T09:03:45.325588+00:00",
+    "error": null
+  }
+]

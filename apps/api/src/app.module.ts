@@ -1,0 +1,30 @@
+import { Module } from '@nestjs/common';
+import { Db } from './common/db';
+import { PublicBrand } from './common/public-brand';
+import { AuthService } from './modules/auth/auth.service';
+import { AuthController } from './modules/auth/auth.controller';
+import { CatalogService } from './modules/catalog/catalog.service';
+import { StoresController } from './modules/stores/stores.controller';
+import { OrdersService } from './modules/orders/orders.service';
+import { OrderExpiryService } from './modules/orders/order-expiry.service';
+import { OrdersController } from './modules/orders/orders.controller';
+import { MerchantController } from './modules/merchant/merchant.controller';
+import { CmsController } from './modules/cms/cms.controller';
+import { StaffController } from './modules/staff/staff.controller';
+import { StaffService } from './modules/staff/staff.service';
+import { CatalogAdminController } from './modules/catalog/catalog-admin.controller';
+import { CatalogAdminService } from './modules/catalog/catalog-admin.service';
+import {ProductOptionsController} from './modules/catalog/product-options.controller';
+import {ProductOptionsService} from './modules/catalog/product-options.service';
+import {PickupController} from './modules/pickup/pickup.controller';
+import {PickupService} from './modules/pickup/pickup.service';
+import {CashRefundsController} from './modules/finance/cash-refunds.controller';
+import {CashRefundsService} from './modules/finance/cash-refunds.service';
+import {CashierDraftsController} from './modules/cashier-drafts/cashier-drafts.controller';
+import {CashierDraftsService} from './modules/cashier-drafts/cashier-drafts.service';
+import {CashShiftsController} from './modules/finance/cash-shifts.controller';
+import {CashShiftsService} from './modules/finance/cash-shifts.service';
+import {AddressesController} from './modules/addresses/addresses.controller';
+import {AddressesService} from './modules/addresses/addresses.service';
+@Module({controllers: [AuthController, StoresController, OrdersController, MerchantController, CmsController, StaffController, CatalogAdminController, ProductOptionsController, PickupController, CashRefundsController, CashierDraftsController, CashShiftsController, AddressesController], providers: [Db, PublicBrand, AuthService, CatalogService, OrdersService, OrderExpiryService, StaffService, CatalogAdminService, ProductOptionsService, PickupService, CashRefundsService, CashierDraftsService, CashShiftsService, AddressesService]})
+export class AppModule {}
